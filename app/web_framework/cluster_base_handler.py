@@ -39,8 +39,10 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
         # Decode an encoded body, if present. Otherwise fall back to decoding the raw request body. See the comments in
         # the util.network.Network class for more information about why we're doing this.
         try:
-            self.encoded_body = self.get_argument(ENCODED_BODY, default=self.request.body)
-            self.decoded_body = tornado.escape.json_decode(self.encoded_body) if self.encoded_body else {}
+            self.encoded_body = self.get_argument(ENCODED_BODY,
+                                                  default=self.request.body)
+            self.decoded_body = tornado.escape.json_decode(
+                self.encoded_body) if self.encoded_body else {}
 
         except ValueError as ex:
             raise BadRequestError('Invalid JSON in request body.') from ex
@@ -60,7 +62,10 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
             response['child_routes'] = self.get_child_routes()
         super().write(response)
 
-    def _write_status(self, additional_response=None, success=True, status_code=200):
+    def _write_status(self,
+                      additional_response=None,
+                      success=True,
+                      status_code=200):
         status = self.SUCCESS_STATUS if success else self.FAILURE_STATUS
         response = {'status': status}
         if additional_response is not None:
@@ -76,8 +81,13 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
         :rtype: dict [str, str]
         """
         if self._route_node is None:
-            raise RuntimeError('This handler ({}) is not associated with a RouteNode'.format(type(self).__name__))
-        return {child.label: child.route_template() for child in self._route_node.children}
+            raise RuntimeError(
+                'This handler ({}) is not associated with a RouteNode'.format(
+                    type(self).__name__))
+        return {
+            child.label: child.route_template()
+            for child in self._route_node.children
+        }
 
     def _handle_request_exception(self, ex):
         """
@@ -89,8 +99,10 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
         :type ex: Exception
         """
         # _handle_request_exception() is called in the exception handler, so we can still use logger.exception.
-        self._logger.exception('Exception occurred during request to {}.', self.request.uri)
-        status_code = self._exception_status_codes.get(type(ex), http.client.INTERNAL_SERVER_ERROR)
+        self._logger.exception('Exception occurred during request to {}.',
+                               self.request.uri)
+        status_code = self._exception_status_codes.get(
+            type(ex), http.client.INTERNAL_SERVER_ERROR)
         response = {'error': str(ex)}
 
         self.set_status(status_code)
@@ -100,7 +112,8 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header('Content-Type', 'application/json')
 
-        request_origin = self.request.headers.get('Origin')  # usually only set when making API request from a browser
+        request_origin = self.request.headers.get(
+            'Origin')  # usually only set when making API request from a browser
         if request_origin and self._is_request_origin_allowed(request_origin):
             self.set_header('Access-Control-Allow-Origin', request_origin)
 
@@ -118,9 +131,12 @@ class ClusterBaseHandler(tornado.web.RequestHandler):
             return False
 
         allowed_origins_regex = Configuration['cors_allowed_origins_regex']
-        if allowed_origins_regex is not None and re.match(allowed_origins_regex, request_origin):
+        if allowed_origins_regex is not None and re.match(
+            allowed_origins_regex, request_origin):
             return True
 
-        self._logger.debug('Origin "{}" did not match cors_allowed_origins_regex conf value of "{}". '
-                           'Not setting Access-Control-Allow-Origin header.', request_origin, allowed_origins_regex)
+        self._logger.debug(
+            'Origin "{}" did not match cors_allowed_origins_regex conf value of "{}". '
+            'Not setting Access-Control-Allow-Origin header.', request_origin,
+            allowed_origins_regex)
         return False

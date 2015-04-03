@@ -1,7 +1,10 @@
 import time
 
 
-def wait_for(boolean_predicate, timeout_seconds=None, poll_period=0.25, exceptions_to_swallow=None):
+def wait_for(boolean_predicate,
+             timeout_seconds=None,
+             poll_period=0.25,
+             exceptions_to_swallow=None):
     """
     Waits a specified amount of time for the conditional predicate to be true.
 

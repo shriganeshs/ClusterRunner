@@ -1,5 +1,3 @@
-
-
 class ItemNotReadyError(Exception):
     """
     An exception to represent the case where something was not yet ready or does not yet exist, but will definitely

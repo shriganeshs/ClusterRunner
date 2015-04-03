@@ -9,7 +9,6 @@ from app.util.unhandled_exception_handler import UnhandledExceptionHandler
 
 
 class TestUnhandledExceptionHandler(BaseUnitTestCase):
-
     def setUp(self):
         super().setUp()
         self.exception_handler = UnhandledExceptionHandler.singleton()
@@ -24,9 +23,13 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
                 raise Exception
 
         for arg_i, callback in enumerate(callbacks):
-            callback.assert_called_once_with(arg_i)  # Each callback should be executed once with the correct args.
-        exception_was_logged = self.log_handler.has_error('Unhandled exception handler caught exception.')
-        self.assertTrue(exception_was_logged, 'Exception handler should log exceptions.')
+            callback.assert_called_once_with(
+                arg_i
+            )  # Each callback should be executed once with the correct args.
+        exception_was_logged = self.log_handler.has_error(
+            'Unhandled exception handler caught exception.')
+        self.assertTrue(exception_was_logged,
+                        'Exception handler should log exceptions.')
 
     def test_exceptions_in_teardown_callbacks_are_caught_and_logged(self):
         an_evil_callback = MagicMock(side_effect=Exception)
@@ -36,13 +39,17 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
             with self.exception_handler:
                 raise Exception
 
-        self.assertEqual(an_evil_callback.call_count, 1, 'A teardown callback should be executed once.')
+        self.assertEqual(an_evil_callback.call_count, 1,
+                         'A teardown callback should be executed once.')
         callback_exception_was_logged = self.log_handler.has_error(
-            AnyStringMatching('Exception raised by teardown callback.*')
-        )
-        self.assertTrue(callback_exception_was_logged, 'Exception handler should log teardown callback exceptions.')
+            AnyStringMatching('Exception raised by teardown callback.*'))
+        self.assertTrue(
+            callback_exception_was_logged,
+            'Exception handler should log teardown callback exceptions.')
 
-    def test_exceptions_in_teardown_callbacks_do_not_prevent_other_callbacks(self):
+    def test_exceptions_in_teardown_callbacks_do_not_prevent_other_callbacks(
+        self
+    ):
         callbacks = [MagicMock(side_effect=Exception),
                      MagicMock(side_effect=Exception),
                      MagicMock(side_effect=Exception)]
@@ -54,7 +61,8 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
                 raise Exception
 
         for callback in callbacks:
-            self.assertEqual(callback.call_count, 1, 'Each teardown callback should be executed once.')
+            self.assertEqual(callback.call_count, 1,
+                             'Each teardown callback should be executed once.')
 
     def test_unexceptional_code_does_not_trigger_teardown_callbacks(self):
         callbacks = [MagicMock(), MagicMock(), MagicMock()]
@@ -65,10 +73,11 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
             pass  # How very unexceptional!
 
         for callback in callbacks:
-            self.assertEqual(callback.call_count, 0, 'No teardown should be executed when code does not raise.')
+            self.assertEqual(
+                callback.call_count, 0,
+                'No teardown should be executed when code does not raise.')
 
     def test_system_exit_gets_passed_to_main_thread_from_another_thread(self):
-
         def call_sys_exit():
             with self.exception_handler:
                 sys.exit(123)
@@ -80,8 +89,8 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
                 non_main_thread.start()
                 non_main_thread.join()
 
-    def test_system_exit_gets_raised_with_code_1_for_any_handled_exception(self):
-
+    def test_system_exit_gets_raised_with_code_1_for_any_handled_exception(self
+                                                                          ):
         def raise_exception():
             with self.exception_handler:
                 raise Exception
@@ -93,7 +102,9 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
                 non_main_thread.start()
                 non_main_thread.join()
 
-    def test_teardown_callbacks_are_executed_in_reverse_order_of_being_added(self):
+    def test_teardown_callbacks_are_executed_in_reverse_order_of_being_added(
+        self
+    ):
         callback = MagicMock()
         self.exception_handler.add_teardown_callback(callback, 'first')
         self.exception_handler.add_teardown_callback(callback, 'second')
@@ -103,12 +114,11 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
             with self.exception_handler:
                 raise Exception
 
-        expected_calls_in_reverse_order = [
-            call('third'),
-            call('second'),
-            call('first')]
-        self.assertListEqual(callback.call_args_list, expected_calls_in_reverse_order,
-                             'Teardown callbacks should be executed in reverse order of being added.')
+        expected_calls_in_reverse_order = [call('third'), call('second'),
+                                           call('first')]
+        self.assertListEqual(
+            callback.call_args_list, expected_calls_in_reverse_order,
+            'Teardown callbacks should be executed in reverse order of being added.')
 
     def test_initializing_singleton_on_non_main_thread_raises_exception(self):
         exception_raised = False
@@ -129,13 +139,18 @@ class TestUnhandledExceptionHandler(BaseUnitTestCase):
         non_main_thread.start()
         non_main_thread.join()
 
-        self.assertTrue(exception_raised, 'Exception should be raised when UnhandledExceptionHandler is initialized on '
-                                          'a non-main thread.')
+        self.assertTrue(
+            exception_raised,
+            'Exception should be raised when UnhandledExceptionHandler is initialized on '
+            'a non-main thread.')
 
     def test_application_info_dump_signal_handler_writes_to_file(self):
         open_mock = mock_open()
-        self.patch('app.util.unhandled_exception_handler.open', new=open_mock, create=True)
-        self.exception_handler._application_info_dump_signal_handler(UnhandledExceptionHandler.SIGINFO, MagicMock())
+        self.patch('app.util.unhandled_exception_handler.open',
+                   new=open_mock,
+                   create=True)
+        self.exception_handler._application_info_dump_signal_handler(
+            UnhandledExceptionHandler.SIGINFO, MagicMock())
 
         handle = open_mock()
         assert handle.write.called

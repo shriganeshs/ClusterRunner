@@ -16,12 +16,10 @@ class ServiceSubcommand(Subcommand):
     _THREAD_NAME = None
 
     def run(self, *args, **kwargs):
-        app_thread = SafeThread(
-            name=self._THREAD_NAME,
-            target=self.async_run,
-            args=args,
-            kwargs=kwargs,
-        )
+        app_thread = SafeThread(name=self._THREAD_NAME,
+                                target=self.async_run,
+                                args=args,
+                                kwargs=kwargs, )
         app_thread.start()
         app_thread.join()
 
@@ -35,14 +33,18 @@ class ServiceSubcommand(Subcommand):
         try:
             application.listen(port, '0.0.0.0')
         except OSError:
-            self._logger.error('Could not start application on port {}. Is port already in use?'.format(port))
+            self._logger.error(
+                'Could not start application on port {}. Is port already in use?'.format(
+                    port))
             sys.exit(1)
 
         ioloop = tornado.ioloop.IOLoop.instance()
 
         # add a teardown callback that will stop the tornado server
-        stop_tornado_ioloop = functools.partial(ioloop.add_callback, callback=ioloop.stop)
-        UnhandledExceptionHandler.singleton().add_teardown_callback(stop_tornado_ioloop)
+        stop_tornado_ioloop = functools.partial(ioloop.add_callback,
+                                                callback=ioloop.stop)
+        UnhandledExceptionHandler.singleton().add_teardown_callback(
+            stop_tornado_ioloop)
         return ioloop
 
     def _write_pid_file(self, filename):
@@ -53,4 +55,6 @@ class ServiceSubcommand(Subcommand):
                 os.remove(filename)
             except OSError:
                 pass
-        UnhandledExceptionHandler.singleton().add_teardown_callback(remove_pid_file)
+
+        UnhandledExceptionHandler.singleton().add_teardown_callback(
+            remove_pid_file)

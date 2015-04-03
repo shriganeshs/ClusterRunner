@@ -11,8 +11,9 @@ from app.util.secret import Secret
 
 
 class BuildSubcommand(Subcommand):
-
-    def run(self, log_level, master_url, remote_file=None, build_type=None, **request_params):
+    def run(self, log_level, master_url,
+            remote_file=None,
+            build_type=None, **request_params):
         """
         Execute a build and wait for it to complete.
 
@@ -29,13 +30,18 @@ class BuildSubcommand(Subcommand):
         :type request_params: dict
         """
         log_level = log_level or Configuration['log_level']
-        log.configure_logging(log_level=log_level, simplified_console_logs=True)
-        request_params['type'] = build_type or request_params.get('type') or 'directory'
+        log.configure_logging(log_level=log_level,
+                              simplified_console_logs=True)
+        request_params['type'] = build_type or request_params.get(
+            'type') or 'directory'
 
         if remote_file:
-            request_params['remote_files'] = {name: url for name, url in remote_file}
+            request_params['remote_files'
+                          ] = {name: url
+                               for name, url in remote_file}
 
-        operational_master_url = master_url or '{}:{}'.format(Configuration['hostname'], Configuration['port'])
+        operational_master_url = master_url or '{}:{}'.format(
+            Configuration['hostname'], Configuration['port'])
 
         # If running a single master, single slave--both on localhost--we need to launch services locally.
         if master_url is None and Network.are_hosts_same(Configuration['master_hostname'], 'localhost') \
@@ -44,9 +50,12 @@ class BuildSubcommand(Subcommand):
             self._start_local_services_if_needed(operational_master_url)
 
         if request_params['type'] == 'directory':
-            request_params['project_directory'] = request_params.get('project_directory') or os.getcwd()
+            request_params['project_directory'] = request_params.get(
+                'project_directory') or os.getcwd()
 
-        runner = BuildRunner(master_url=operational_master_url, request_params=request_params, secret=Secret.get())
+        runner = BuildRunner(master_url=operational_master_url,
+                             request_params=request_params,
+                             secret=Secret.get())
 
         if not runner.run():
             sys.exit(1)

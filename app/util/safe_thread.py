@@ -12,6 +12,7 @@ class SafeThread(Thread):
     Unless we have a specific reason not to, we should use this class everywhere throughout the application instead of
     threading.Thread.
     """
+
     def run(self):
         unhandled_exception_handler = UnhandledExceptionHandler.singleton()
         with unhandled_exception_handler:

@@ -13,11 +13,10 @@ class ClusterRunnerTokenChecker(BaseChecker):
 
     name = 'clusterrunner_token_checker'
     msgs = {
-        'CR001': (
-            'Comment contains disallowed string "DO NOT COMMIT"',
-            'clusterrunner-do-not-commit',
-            'Used when a comment contains the string "DO NOT COMMIT". '
-            'These are generated files that should not be committed.'),
+        'CR001': ('Comment contains disallowed string "DO NOT COMMIT"',
+                  'clusterrunner-do-not-commit',
+                  'Used when a comment contains the string "DO NOT COMMIT". '
+                  'These are generated files that should not be committed.'),
     }
 
     def process_tokens(self, tokens):

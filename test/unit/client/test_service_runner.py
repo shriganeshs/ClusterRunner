@@ -5,7 +5,6 @@ from test.framework.base_unit_test_case import BaseUnitTestCase
 
 
 class TestServiceRunner(BaseUnitTestCase):
-
     def setUp(self):
         super().setUp()
         self.mock_Popen = self.patch('app.client.service_runner.Popen')
@@ -33,4 +32,4 @@ class TestServiceRunner(BaseUnitTestCase):
         except ServiceRunError:
             pass
 
-        assert  not self.mock_Popen.called
+        assert not self.mock_Popen.called

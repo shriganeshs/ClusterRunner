@@ -25,6 +25,8 @@ class UrlBuilder(object):
         :type args: iterable [str|int]
         :rtype: str
         """
-        schemed_address = self._scheme + re.sub(r'^[a-z]+://', '', self._service_address)
+        schemed_address = self._scheme + re.sub(r'^[a-z]+://', '',
+                                                self._service_address)
         versioned_url = urljoin(schemed_address, self._api_version)
-        return '/'.join([versioned_url] + [str(arg).strip('/') for arg in args])
+        return '/'.join([versioned_url] + [str(arg).strip('/')
+                                           for arg in args])

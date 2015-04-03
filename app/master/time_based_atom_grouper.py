@@ -85,22 +85,31 @@ class TimeBasedAtomGrouper(object):
             return grouper.groupings()
 
         # 2). Sort them by time, and add them to an OrderedDict
-        sorted_atom_times_left = OrderedDict(sorted(new_atoms_with_times_list, key=itemgetter(1), reverse=True))
+        sorted_atom_times_left = OrderedDict(sorted(new_atoms_with_times_list,
+                                                    key=itemgetter(1),
+                                                    reverse=True))
 
         # 3). Group them!
 
         # Calculate what the target 'big subjob' time is going to be for each executor's initial subjob
-        big_subjob_time = (total_estimated_runtime * self.BIG_CHUNK_FRACTION) / self._max_executors
+        big_subjob_time = (total_estimated_runtime * self.
+                           BIG_CHUNK_FRACTION) / self._max_executors
         # Calculate what the target 'small subjob' time is going to be
-        small_subjob_time = (total_estimated_runtime * (1.0 - self.BIG_CHUNK_FRACTION)) / (2 * self._max_executors)
+        small_subjob_time = (total_estimated_runtime *
+                             (1.0 - self.
+                              BIG_CHUNK_FRACTION)) / (2 * self._max_executors)
         # _group_atoms_into_sized_buckets() will remove elements from sorted_atom_times_left.
-        subjobs = self._group_atoms_into_sized_buckets(sorted_atom_times_left, big_subjob_time, self._max_executors)
-        small_subjobs = self._group_atoms_into_sized_buckets(sorted_atom_times_left, small_subjob_time, None)
+        subjobs = self._group_atoms_into_sized_buckets(
+            sorted_atom_times_left, big_subjob_time, self._max_executors)
+        small_subjobs = self._group_atoms_into_sized_buckets(
+            sorted_atom_times_left, small_subjob_time, None)
 
         subjobs.extend(small_subjobs)
         return subjobs
 
-    def _coalesce_new_atoms_with_historic_times(self, new_atoms, old_atoms_with_times, project_directory):
+    def _coalesce_new_atoms_with_historic_times(self, new_atoms,
+                                                old_atoms_with_times,
+                                                project_directory):
         """
         Combine the historic timing data from previous atoms (for the same job) with the new atoms generated for this
         job.
@@ -124,7 +133,8 @@ class TimeBasedAtomGrouper(object):
 
         # Generate list for atoms that have timing data
         for new_atom in new_atoms:
-            new_atom_directory_stripped = new_atom.replace(project_directory, '')
+            new_atom_directory_stripped = new_atom.replace(project_directory,
+                                                           '')
 
             # When matching up new atoms with stored atom timing data, we use the project-directory-stripped
             # atom string for matching.
@@ -153,7 +163,9 @@ class TimeBasedAtomGrouper(object):
         total_time += (max_atom_time * len(atoms_without_timing_data))
         return coalesced_atoms_with_times, total_time
 
-    def _group_atoms_into_sized_buckets(self, sorted_atom_time_dict, target_group_time, max_groups_to_create):
+    def _group_atoms_into_sized_buckets(self, sorted_atom_time_dict,
+                                        target_group_time,
+                                        max_groups_to_create):
         """
         Given a sorted dictionary (Python FTW) of [atom, time] pairs in variable sorted_atom_time_dict, return a list
         of lists of atoms that each are estimated to take target_group_time seconds. This method will generate at most
@@ -179,9 +191,11 @@ class TimeBasedAtomGrouper(object):
         subjob_time_so_far = 0
         subjob_atoms = []
 
-        while (max_groups_to_create is None or len(subjobs) < max_groups_to_create) and len(sorted_atom_time_dict) > 0:
+        while (max_groups_to_create is None or len(subjobs) <
+               max_groups_to_create) and len(sorted_atom_time_dict) > 0:
             for atom, time in sorted_atom_time_dict.items():
-                if len(subjob_atoms) == 0 or (time + subjob_time_so_far) <= target_group_time:
+                if len(subjob_atoms) == 0 or (time + subjob_time_so_far
+                                             ) <= target_group_time:
                     subjob_time_so_far += time
                     subjob_atoms.append(atom)
                     sorted_atom_time_dict.pop(atom)
@@ -190,7 +204,9 @@ class TimeBasedAtomGrouper(object):
                     # subjobs we need to create, then have each remaining atom be a subjob and return.
                     # The "+ 1" is here to account for the current subjob being generated, but that hasn't been
                     # appended to subjobs yet.
-                    if max_groups_to_create is not None and (len(subjobs) + len(sorted_atom_time_dict) + 1) <= max_groups_to_create:
+                    if max_groups_to_create is not None and (
+                        len(subjobs) + len(sorted_atom_time_dict) + 1
+                    ) <= max_groups_to_create:
                         subjobs.append(subjob_atoms)
 
                         for atom, _ in sorted_atom_time_dict.items():

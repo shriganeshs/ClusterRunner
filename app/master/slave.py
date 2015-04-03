@@ -42,8 +42,9 @@ class Slave(object):
         Do bookkeeping when this slave becomes idle.  Error if the slave cannot be idle.
         """
         if self._num_executors_in_use.value() != 0:
-            raise Exception('Trying to mark slave idle while {} executors still in use.',
-                            self._num_executors_in_use.value())
+            raise Exception(
+                'Trying to mark slave idle while {} executors still in use.',
+                self._num_executors_in_use.value())
 
         self.current_build_id = None
 
@@ -56,7 +57,8 @@ class Slave(object):
         :type build: Build
         """
         slave_project_type_params = build.build_request.build_parameters().copy()
-        slave_project_type_params.update(build.project_type.slave_param_overrides())
+        slave_project_type_params.update(
+            build.project_type.slave_param_overrides())
 
         setup_url = self._slave_api.url('build', build.build_id(), 'setup')
         post_data = {
@@ -71,34 +73,45 @@ class Slave(object):
         Tell the slave to run the build teardown
         """
         if self.is_alive():
-            teardown_url = self._slave_api.url('build', self.current_build_id, 'teardown')
+            teardown_url = self._slave_api.url('build', self.current_build_id,
+                                               'teardown')
             self._network.post(teardown_url)
         else:
-            self._logger.notice('Teardown request to slave {} was not sent since slave is disconnected.', self.url)
+            self._logger.notice(
+                'Teardown request to slave {} was not sent since slave is disconnected.',
+                self.url)
 
     def start_subjob(self, subjob):
         """
         :type subjob: Subjob
         """
         if not self.is_alive():
-            raise RuntimeError('Tried to start a subjob on a dead slave! ({}, id: {})'.format(self.url, self.id))
+            raise RuntimeError(
+                'Tried to start a subjob on a dead slave! ({}, id: {})'.format(
+                    self.url, self.id))
 
-        SafeThread(target=self._async_start_subjob, args=(subjob,)).start()
+        SafeThread(target=self._async_start_subjob, args=(subjob, )).start()
 
     def _async_start_subjob(self, subjob):
         """
         :type subjob: Subjob
         """
-        execution_url = self._slave_api.url('build', subjob.build_id(), 'subjob', subjob.subjob_id())
+        execution_url = self._slave_api.url('build', subjob.build_id(),
+                                            'subjob', subjob.subjob_id())
         post_data = {
             'subjob_artifact_dir': subjob.artifact_dir(),
             'atomic_commands': subjob.atomic_commands(),
         }
-        response = self._network.post_with_digest(execution_url, post_data, Secret.get(), error_on_failure=True)
+        response = self._network.post_with_digest(execution_url, post_data,
+                                                  Secret.get(),
+                                                  error_on_failure=True)
 
         subjob_executor_id = response.json().get('executor_id')
-        analytics.record_event(analytics.MASTER_TRIGGERED_SUBJOB, executor_id=subjob_executor_id,
-                               build_id=subjob.build_id(), subjob_id=subjob.subjob_id(), slave_id=self.id)
+        analytics.record_event(analytics.MASTER_TRIGGERED_SUBJOB,
+                               executor_id=subjob_executor_id,
+                               build_id=subjob.build_id(),
+                               subjob_id=subjob.subjob_id(),
+                               slave_id=self.id)
 
     def num_executors_in_use(self):
         return self._num_executors_in_use.value()
@@ -106,13 +119,17 @@ class Slave(object):
     def claim_executor(self):
         new_count = self._num_executors_in_use.increment()
         if new_count > self.num_executors:
-            raise Exception('Cannot claim executor on slave {}. No executors left.'.format(self.url))
+            raise Exception(
+                'Cannot claim executor on slave {}. No executors left.'.format(
+                    self.url))
         return new_count
 
     def free_executor(self):
         new_count = self._num_executors_in_use.decrement()
         if new_count < 0:
-            raise Exception('Cannot free executor on slave {}. All are free.'.format(self.url))
+            raise Exception(
+                'Cannot free executor on slave {}. All are free.'.format(
+                    self.url))
         return new_count
 
     def is_alive(self, use_cached=True):
@@ -135,11 +152,17 @@ class Slave(object):
             else:
                 response_data = response.json()
 
-                if 'slave' not in response_data or 'is_alive' not in response_data['slave']:
-                    self._logger.warning('{}\'s API is missing key slave[\'is_alive\'].', self.url)
+                if 'slave' not in response_data or 'is_alive' not in response_data[
+                    'slave'
+                ]:
+                    self._logger.warning(
+                        '{}\'s API is missing key slave[\'is_alive\'].',
+                        self.url)
                     self._is_alive = False
                 elif not isinstance(response_data['slave']['is_alive'], bool):
-                    self._logger.warning('{}\'s API key \'is_alive\' is not a boolean.', self.url)
+                    self._logger.warning(
+                        '{}\'s API key \'is_alive\' is not a boolean.',
+                        self.url)
                     self._is_alive = False
                 else:
                     self._is_alive = response_data['slave']['is_alive']

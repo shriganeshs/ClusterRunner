@@ -14,7 +14,6 @@ from app.util.conf.configuration import Configuration
 
 
 class ProjectType(object):
-
     def __init__(self, config=None, job_name=None, remote_files=None):
         """
         :param config: A yaml string representing a cluster_runner.yaml file
@@ -59,9 +58,11 @@ class ProjectType(object):
         if self._config is not None:
             return self._config
 
-        yaml_file = os.path.join(self.project_directory, Configuration['project_yaml_filename'])
+        yaml_file = os.path.join(self.project_directory,
+                                 Configuration['project_yaml_filename'])
         if not os.path.exists(yaml_file):
-            raise FileNotFoundError('Could not find project yaml file {}'.format(yaml_file))
+            raise FileNotFoundError(
+                'Could not find project yaml file {}'.format(yaml_file))
 
         with open(yaml_file, 'r') as f:
             config_contents = f.read()
@@ -90,14 +91,16 @@ class ProjectType(object):
         output, exit_code = self.execute_command_in_project(command, cwd=cwd)
         # If the command was intentionally killed, do not raise an error
         if exit_code != 0 and not self._kill_event.is_set():
-            raise RuntimeError('{} Command: "{}"\nOutput: "{}"'.format(message, command, output))
+            raise RuntimeError('{} Command: "{}"\nOutput: "{}"'.format(
+                message, command, output))
         return output
 
     def _execute_in_project_and_raise_on_failure(self, command, message):
         """
         :rtype: string
         """
-        return self._execute_and_raise_on_failure(command, message, self.project_directory)
+        return self._execute_and_raise_on_failure(command, message,
+                                                  self.project_directory)
 
     def teardown_build(self, timeout=None):
         """
@@ -116,10 +119,12 @@ class ProjectType(object):
         """
         job_config = self.job_config()
         if job_config.setup_build:
-            output, exit_code = self.execute_command_in_project(job_config.setup_build)
+            output, exit_code = self.execute_command_in_project(
+                job_config.setup_build)
             if exit_code != 0:
-                raise SetupFailureError('Build setup failed!\nCommand:\n"{}"\n\nOutput:\n{}'
-                                        .format(job_config.setup_build, output))
+                raise SetupFailureError(
+                    'Build setup failed!\nCommand:\n"{}"\n\nOutput:\n{}'.format(
+                        job_config.setup_build, output))
             self._logger.info('Build setup completed successfully.')
 
     def run_job_config_teardown(self, timeout=None):
@@ -131,10 +136,13 @@ class ProjectType(object):
         """
         job_config = self.job_config()
         if job_config.teardown_build:
-            output, exit_code = self.execute_command_in_project(job_config.teardown_build, timeout=timeout)
+            output, exit_code = self.execute_command_in_project(
+                job_config.teardown_build,
+                timeout=timeout)
             if exit_code != 0:
-                raise TeardownFailureError('Build teardown failed!\nCommand:\n"{}"\n\nOutput:\n{}'
-                                           .format(job_config.teardown_build, output))
+                raise TeardownFailureError(
+                    'Build teardown failed!\nCommand:\n"{}"\n\nOutput:\n{}'.format(
+                        job_config.teardown_build, output))
             self._logger.info('Build teardown completed successfully.')
 
     def setup_executor(self):
@@ -166,7 +174,9 @@ class ProjectType(object):
         """
         return command
 
-    def execute_command_in_project(self, command, extra_environment_vars=None, timeout=None, **popen_kwargs):
+    def execute_command_in_project(self, command,
+                                   extra_environment_vars=None,
+                                   timeout=None, **popen_kwargs):
         """
         Execute a command in the context of the project
 
@@ -181,8 +191,10 @@ class ProjectType(object):
         :return: a tuple of (the string output from the command, the exit code of the command)
         :rtype: (string, int)
         """
-        environment_setter = self.shell_environment_command(extra_environment_vars)
-        command = self.command_in_project('{} {}'.format(environment_setter, command))
+        environment_setter = self.shell_environment_command(
+            extra_environment_vars)
+        command = self.command_in_project('{} {}'.format(environment_setter,
+                                                         command))
         self._logger.debug('Executing command in project: {}', command)
 
         # Redirect output to files instead of using pipes to avoid: https://github.com/box/ClusterRunner/issues/57
@@ -193,9 +205,9 @@ class ProjectType(object):
             shell=True,
             stdout=stdout_file,
             stderr=stderr_file,
-            start_new_session=True,  # Starts a new process group (so we can kill it without killing clusterrunner).
-            **popen_kwargs
-        )
+            start_new_session=True,
+            # Starts a new process group (so we can kill it without killing clusterrunner).
+            **popen_kwargs)
 
         clusterrunner_error_msgs = []
         command_completed = False
@@ -203,7 +215,8 @@ class ProjectType(object):
 
         # Wait for the command to complete, but also periodically check the kill event flag to see if we should
         # terminate the process prematurely.
-        while not command_completed and not self._kill_event.is_set() and time.time() < timeout_time:
+        while not command_completed and not self._kill_event.is_set(
+        ) and time.time() < timeout_time:
             try:
                 pipe.wait(timeout=1)
                 command_completed = True  # wait() didn't raise TimeoutExpired, so process has finished executing.
@@ -213,7 +226,8 @@ class ProjectType(object):
                 error_message = 'Exception while waiting for process to finish.'
                 self._logger.exception(error_message)
                 clusterrunner_error_msgs.append(
-                    'ClusterRunner: {} ({}: "{}")'.format(error_message, type(ex).__name__, ex))
+                    'ClusterRunner: {} ({}: "{}")'.format(
+                        error_message, type(ex).__name__, ex))
                 break
 
         if not command_completed:
@@ -222,32 +236,39 @@ class ProjectType(object):
             # will kill only "sh" and not its child processes.
             # Note: We may lose buffered output from the subprocess that hasn't been flushed before termination. If we
             # want to prevent output buffering we should refactor this method to use pexpect.
-            self._logger.warning('Terminating PID: {}, Command: "{}"', pipe.pid, command)
+            self._logger.warning('Terminating PID: {}, Command: "{}"',
+                                 pipe.pid, command)
             try:
                 # todo: os.killpg sends a SIGTERM to all processes in the process group. If the immediate child process
                 # ("sh") dies but its child processes do not, we will leave them running orphaned.
                 os.killpg(pipe.pid, signal.SIGTERM)
-            except (PermissionError, ProcessLookupError) as ex:  # os.killpg will raise if process has already ended
-                self._logger.warning('Attempted to kill process group (pgid: {}) but raised {}: "{}".',
-                                     pipe.pid, type(ex).__name__, ex)
+            except (PermissionError, ProcessLookupError
+                   ) as ex:  # os.killpg will raise if process has already ended
+                self._logger.warning(
+                    'Attempted to kill process group (pgid: {}) but raised {}: "{}".',
+                    pipe.pid, type(ex).__name__, ex)
             try:
                 pipe.wait()
             except Exception as ex:  # pylint: disable=broad-except
                 error_message = 'Exception while waiting for terminated process to finish.'
                 self._logger.exception(error_message)
                 clusterrunner_error_msgs.append(
-                    'ClusterRunner: {} ({}: "{}")'.format(error_message, type(ex).__name__, ex))
+                    'ClusterRunner: {} ({}: "{}")'.format(
+                        error_message, type(ex).__name__, ex))
 
-        stdout, stderr = [self._read_file_contents_and_close(f) for f in [stdout_file, stderr_file]]
+        stdout, stderr = [self._read_file_contents_and_close(f)
+                          for f in [stdout_file, stderr_file]]
         exit_code = pipe.returncode
 
         if exit_code != 0:
             max_log_length = 300
             logged_stdout, logged_stderr = stdout, stderr
             if len(stdout) > max_log_length:
-                logged_stdout = '{}... (total stdout length: {})'.format(stdout[:max_log_length], len(stdout))
+                logged_stdout = '{}... (total stdout length: {})'.format(
+                    stdout[:max_log_length], len(stdout))
             if len(stderr) > max_log_length:
-                logged_stderr = '{}... (total stderr length: {})'.format(stderr[:max_log_length], len(stderr))
+                logged_stderr = '{}... (total stderr length: {})'.format(
+                    stderr[:max_log_length], len(stderr))
 
             # Note we are intentionally not logging at error or warning level here. Interpreting a non-zero return code
             # as a failure is context-dependent, so we can't make that determination here.
@@ -255,17 +276,20 @@ class ProjectType(object):
                 'Command exited with non-zero exit code.\nCommand: {}\nExit code: {}\nStdout: {}\nStderr: {}\n',
                 command, exit_code, logged_stdout, logged_stderr)
         else:
-            self._logger.debug('Command completed with exit code {}.', exit_code)
+            self._logger.debug('Command completed with exit code {}.',
+                               exit_code)
 
         exit_code = exit_code if exit_code is not None else -1  # Make sure we always return an int.
-        combined_command_output = '\n'.join([stdout, stderr] + clusterrunner_error_msgs)
+        combined_command_output = '\n'.join(
+            [stdout, stderr] + clusterrunner_error_msgs)
         return combined_command_output, exit_code
 
     def _read_file_contents_and_close(self, file):
         """
         :type file: BufferedRandom
         """
-        file.seek(0)  # Reset file positions so we are reading from the beginning.
+        file.seek(
+            0)  # Reset file positions so we are reading from the beginning.
         contents = file.read().decode('utf-8', errors='replace')
         file.close()
         return contents
@@ -304,7 +328,8 @@ class ProjectType(object):
         environment_vars = self._get_environment_vars()
         environment_vars.update(extra_environment_vars or {})
 
-        commands = ['export {}="{}";'.format(key, value) for key, value in environment_vars.items()]
+        commands = ['export {}="{}";'.format(key, value)
+                    for key, value in environment_vars.items()]
         return ' '.join(commands)
 
     def kill_subprocesses(self):
@@ -329,7 +354,8 @@ class ProjectType(object):
         :rtype: list[str]
         """
         arguments_info = cls.constructor_arguments_info()
-        return [arg_name for arg_name, arg_info in arguments_info.items() if arg_info.required]
+        return [arg_name for arg_name, arg_info in arguments_info.items()
+                if arg_info.required]
 
     @classmethod
     def constructor_arguments_info(cls, blacklist=None):
@@ -352,7 +378,9 @@ class ProjectType(object):
         constructor_doc = inspect.getdoc(cls.__init__) or ''
         arg_spec = inspect.getfullargspec(cls.__init__)
         blacklist = blacklist or []
-        argument_names = arg_spec.args[1:]  # discard "self", which is the first argument.
+        argument_names = arg_spec.args[
+            1:
+        ]  # discard "self", which is the first argument.
         default_arg_values = arg_spec.defaults or []
         num_required_args = len(argument_names) - len(default_arg_values)
 
@@ -362,18 +390,21 @@ class ProjectType(object):
                 continue
             # extract the doc for this param from the docstring. note: this only grabs the first line, so we can add
             # "private" additional doc on following lines.
-            docstring_match = re.search(r'^\s*:param ' + argument_name + ': (.*)$', constructor_doc, re.MULTILINE)
+            docstring_match = re.search(
+                r'^\s*:param ' + argument_name + ': (.*)$', constructor_doc,
+                re.MULTILINE)
             help_string = docstring_match.group(1) if docstring_match else None
 
             # determine if argument is required. if it's not required, also get its default argument value.
             is_required = argument_index < num_required_args
-            default_value = None if is_required else default_arg_values[argument_index - num_required_args]
+            default_value = None if is_required else default_arg_values[
+                argument_index - num_required_args
+            ]
 
             arguments_info[argument_name] = _ProjectTypeArgumentInfo(
                 help=help_string,
                 required=is_required,
-                default=default_value,
-            )
+                default=default_value, )
 
         return arguments_info
 
@@ -393,7 +424,9 @@ class ProjectType(object):
         for command in self._remote_file_commands():
             output, exit_code = self.execute_command_in_project(command)
             if exit_code != 0:
-                raise RuntimeError('Remote file setup exited with {} while running `{}`'.format(exit_code, command))
+                raise RuntimeError(
+                    'Remote file setup exited with {} while running `{}`'.format(
+                        exit_code, command))
 
     def _remote_file_commands(self):
         """
@@ -401,10 +434,12 @@ class ProjectType(object):
             output file
         :rtype: string
         """
-        return ['curl {} -o $PROJECT_DIR/{}'.format(url, name) for (name, url) in self._remote_files.items()]
+        return ['curl {} -o $PROJECT_DIR/{}'.format(url, name)
+                for (name, url) in self._remote_files.items()]
 
 
-_ProjectTypeArgumentInfo = namedtuple('_ProjectTypeArgumentInfo', ['help', 'required', 'default'])
+_ProjectTypeArgumentInfo = namedtuple('_ProjectTypeArgumentInfo',
+                                      ['help', 'required', 'default'])
 
 
 class SetupFailureError(Exception):

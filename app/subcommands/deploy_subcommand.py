@@ -25,7 +25,8 @@ class DeploySubcommand(Subcommand):
     # Number of seconds to wait for all of the slave services to successfully register with the master service
     _SLAVE_REGISTRY_TIMEOUT_SEC = 5
 
-    def run(self, log_level, master, master_port, slaves, slave_port, num_executors):
+    def run(self, log_level, master, master_port, slaves, slave_port,
+            num_executors):
         """
         'Deploy' can be a vague word, so we should be specific about what this command accomplishes.
 
@@ -53,8 +54,7 @@ class DeploySubcommand(Subcommand):
         log.configure_logging(
             log_level=log_level or Configuration['log_level'],
             log_file=Configuration['log_file'],
-            simplified_console_logs=True,
-        )
+            simplified_console_logs=True, )
         conf_path = Configuration['config_file']
         current_executable = sys.executable
         username = getpass.getuser()
@@ -65,24 +65,31 @@ class DeploySubcommand(Subcommand):
         slaves = slaves or master_config.get('slaves')
         slave_port = slave_port or slave_config.get('port')
         num_executors = num_executors or slave_config.get('num_executors')
-        clusterrunner_executable_dir = join(os.path.expanduser('~'), '.clusterrunner', 'dist')
-        clusterrunner_executable = join(clusterrunner_executable_dir, 'clusterrunner')
+        clusterrunner_executable_dir = join(os.path.expanduser('~'),
+                                            '.clusterrunner', 'dist')
+        clusterrunner_executable = join(clusterrunner_executable_dir,
+                                        'clusterrunner')
 
         self._logger.info('Compressing binaries...')
-        binaries_tar_path = self._binaries_tar(current_executable, Configuration['root_directory'])
+        binaries_tar_path = self._binaries_tar(current_executable,
+                                               Configuration['root_directory'])
 
-        self._logger.info('Deploying binaries and confs on master and slaves...')
-        arguments = [[host, username, current_executable, binaries_tar_path, conf_path] for host in slaves + [master]]
+        self._logger.info(
+            'Deploying binaries and confs on master and slaves...')
+        arguments = [[host, username, current_executable, binaries_tar_path,
+                      conf_path] for host in slaves + [master]]
         Pool().starmap(self._deploy_binaries_and_conf, arguments)
 
         self._logger.info('Stopping and starting all clusterrunner services...')
-        self._start_services(master, master_port, slaves, slave_port, num_executors, username, clusterrunner_executable)
+        self._start_services(master, master_port, slaves, slave_port,
+                             num_executors, username, clusterrunner_executable)
 
         self._logger.info('Validating successful deployment...')
         master_service_url = '{}:{}'.format(master, master_port)
         self._validate_successful_deployment(master_service_url, slaves)
 
-        self._logger.info('Deploy SUCCESS to slaves: {}'.format(','.join(slaves)))
+        self._logger.info(
+            'Deploy SUCCESS to slaves: {}'.format(','.join(slaves)))
 
     def _binaries_tar(self, current_executable, clusterrunner_bin_dir):
         """
@@ -99,19 +106,24 @@ class DeploySubcommand(Subcommand):
         """
         # We don't support 'clusterrunner deploy' from source yet. @TODO: support this feature
         if 'python' in current_executable:
-            self._logger.error('sys.executable is set to {}. Cannot deploy from source.'.format(current_executable))
+            self._logger.error(
+                'sys.executable is set to {}. Cannot deploy from source.'.format(
+                    current_executable))
             raise SystemExit(1)
 
         tar_file_path = join(clusterrunner_bin_dir, 'clusterrunner.tgz')
 
         if os.path.isfile(tar_file_path):
-            self._logger.info('Compressed tar file {} already exists, skipping compression.'.format(tar_file_path))
+            self._logger.info(
+                'Compressed tar file {} already exists, skipping compression.'.format(
+                    tar_file_path))
             return tar_file_path
 
         fs.compress_directory(clusterrunner_bin_dir, tar_file_path)
         return tar_file_path
 
-    def _deploy_binaries_and_conf(self, host, username, current_executable, binaries_tar_path, in_use_conf_path):
+    def _deploy_binaries_and_conf(self, host, username, current_executable,
+                                  binaries_tar_path, in_use_conf_path):
         """
         Move binaries and conf to single host.
 
@@ -127,23 +139,30 @@ class DeploySubcommand(Subcommand):
         """
         clusterrunner_dir = join(os.path.expanduser('~'), '.clusterrunner')
         clusterrunner_executable_dir = join(clusterrunner_dir, 'dist')
-        clusterrunner_executable_deploy_target = join(clusterrunner_executable_dir, 'clusterrunner')
-        clusterrunner_conf_deploy_target = join(clusterrunner_dir, 'clusterrunner.conf')
+        clusterrunner_executable_deploy_target = join(
+            clusterrunner_executable_dir, 'clusterrunner')
+        clusterrunner_conf_deploy_target = join(clusterrunner_dir,
+                                                'clusterrunner.conf')
         deploy_target = DeployTarget(host, username)
 
         if Network.are_hosts_same(host, 'localhost'):
             # Do not want to overwrite the currently running executable.
             if current_executable != clusterrunner_executable_deploy_target:
-                deploy_target.deploy_binary(binaries_tar_path, clusterrunner_executable_dir)
+                deploy_target.deploy_binary(binaries_tar_path,
+                                            clusterrunner_executable_dir)
 
             # Do not want to overwrite the currently used conf.
             if in_use_conf_path != clusterrunner_conf_deploy_target:
-                deploy_target.deploy_conf(in_use_conf_path, clusterrunner_conf_deploy_target)
+                deploy_target.deploy_conf(in_use_conf_path,
+                                          clusterrunner_conf_deploy_target)
         else:
-            deploy_target.deploy_binary(binaries_tar_path, clusterrunner_executable_dir)
-            deploy_target.deploy_conf(in_use_conf_path, clusterrunner_conf_deploy_target)
+            deploy_target.deploy_binary(binaries_tar_path,
+                                        clusterrunner_executable_dir)
+            deploy_target.deploy_conf(in_use_conf_path,
+                                      clusterrunner_conf_deploy_target)
 
-    def _start_services(self, master, master_port, slaves, slave_port, num_executors, username, clusterrunner_executable):
+    def _start_services(self, master, master_port, slaves, slave_port,
+                        num_executors, username, clusterrunner_executable):
         """
         Stop and start the appropriate clusterrunner services on all machines.
 
@@ -166,25 +185,34 @@ class DeploySubcommand(Subcommand):
         # reduces the risk of a race condition where the slave service sends a slave-shutdown request to the master
         # after the new master service starts.
         self._logger.debug('Stopping all slave services')
-        slave_services = [RemoteSlaveService(slave, username, clusterrunner_executable) for slave in slaves]
+        slave_services = [
+            RemoteSlaveService(slave, username, clusterrunner_executable)
+            for slave in slaves
+        ]
         Pool().map(lambda slave_service: slave_service.stop(), slave_services)
 
         self._logger.debug('Stopping master service on {}...'.format(master))
-        master_service = RemoteMasterService(master, username, clusterrunner_executable)
+        master_service = RemoteMasterService(master, username,
+                                             clusterrunner_executable)
         master_service.stop()
 
-        self._logger.debug('Starting master service on {}:{}'.format(master_service.host, master_port))
+        self._logger.debug('Starting master service on {}:{}'.format(
+            master_service.host, master_port))
         master_service.start_and_block_until_up(master_port)
 
         self._logger.debug('Starting slave services')
 
         for slave_service in slave_services:
             try:
-                slave_service.start(master, master_port, slave_port, num_executors)
+                slave_service.start(master, master_port, slave_port,
+                                    num_executors)
             except Exception as e:  # pylint: disable=broad-except
-                self._logger.error('Failed to start slave service on {} with message: {}'.format(slave_service.host, e))
+                self._logger.error(
+                    'Failed to start slave service on {} with message: {}'.format(
+                        slave_service.host, e))
 
-    def _validate_successful_deployment(self, master_service_url, slaves_to_validate):
+    def _validate_successful_deployment(self, master_service_url,
+                                        slaves_to_validate):
         """
         Poll the master's /slaves endpoint until either timeout or until all of the slaves have registered with
         the master.
@@ -201,23 +229,28 @@ class DeploySubcommand(Subcommand):
         network = Network()
 
         def all_slaves_registered():
-            return len(self._registered_slave_hostnames(slave_api_url, network)) == len(slaves_to_validate)
+            return len(self._registered_slave_hostnames(
+                slave_api_url, network)) == len(slaves_to_validate)
 
-        if not wait_for(
-                boolean_predicate=all_slaves_registered,
-                timeout_seconds=self._SLAVE_REGISTRY_TIMEOUT_SEC,
-                poll_period=1,
-                exceptions_to_swallow=(requests.RequestException, requests.ConnectionError)
-        ):
+        if not wait_for(boolean_predicate=all_slaves_registered,
+                        timeout_seconds=self._SLAVE_REGISTRY_TIMEOUT_SEC,
+                        poll_period=1,
+                        exceptions_to_swallow=(requests.RequestException,
+                                               requests.ConnectionError)):
             try:
-                registered_slaves = self._registered_slave_hostnames(slave_api_url, network)
-                non_registered_slaves = self._non_registered_slaves(registered_slaves, slaves_to_validate)
+                registered_slaves = self._registered_slave_hostnames(
+                    slave_api_url, network)
+                non_registered_slaves = self._non_registered_slaves(
+                    registered_slaves, slaves_to_validate)
             except ConnectionError:
-                self._logger.error('Error contacting {} on the master.'.format(slave_api_url))
+                self._logger.error(
+                    'Error contacting {} on the master.'.format(slave_api_url))
                 raise SystemExit(1)
 
-            self._logger.error('Slave registration timed out after {} sec, with slaves {} missing.'.format(
-                self._SLAVE_REGISTRY_TIMEOUT_SEC, ','.join(non_registered_slaves)))
+            self._logger.error(
+                'Slave registration timed out after {} sec, with slaves {} missing.'.format(
+                    self._SLAVE_REGISTRY_TIMEOUT_SEC,
+                    ','.join(non_registered_slaves)))
             raise SystemExit(1)
 
     def _registered_slave_hostnames(self, slave_api_url, network):
@@ -235,8 +268,9 @@ class DeploySubcommand(Subcommand):
         response_data = raw_network_response.json()
 
         if 'slaves' not in response_data:
-            raise RuntimeError('Received invalid response from API call to {} with contents: {}'.format(
-                slave_api_url, raw_network_response))
+            raise RuntimeError(
+                'Received invalid response from API call to {} with contents: {}'.format(
+                    slave_api_url, raw_network_response))
 
         registered_slave_hosts = []
 
@@ -269,13 +303,15 @@ class DeploySubcommand(Subcommand):
         slaves_to_validate_rsa_key_host_pairs = {}
 
         for slave_to_validate in slaves_to_validate:
-            slaves_to_validate_rsa_key_host_pairs[Network.rsa_key(slave_to_validate)] = slave_to_validate
+            slaves_to_validate_rsa_key_host_pairs[Network.rsa_key(
+                slave_to_validate)] = slave_to_validate
 
         non_registered_slave_hosts = []
 
         for rsa_key in slaves_to_validate_rsa_key_host_pairs:
             if rsa_key not in registered_rsa_keys:
-                non_registered_slave_hosts.append(slaves_to_validate_rsa_key_host_pairs[rsa_key])
+                non_registered_slave_hosts.append(
+                    slaves_to_validate_rsa_key_host_pairs[rsa_key])
 
         return non_registered_slave_hosts
 

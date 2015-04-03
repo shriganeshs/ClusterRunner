@@ -5,7 +5,6 @@ from app.master.atomizer import Atomizer
 from app.master.job_config import JobConfig
 from app.util import log
 
-
 # clusterrunner.yaml config section names
 SETUP_BUILD = 'setup_build'
 TEARDOWN_BUILD = 'teardown_build'
@@ -40,15 +39,18 @@ class ClusterRunnerConfig(object):
 
         if job_name is not None:
             if job_name not in self._job_configs:
-                raise JobNotFoundError('The job "{}" was not found in the loaded config. '
-                                       'Valid jobs are: {}'.format(job_name, self.get_job_names()))
+                raise JobNotFoundError(
+                    'The job "{}" was not found in the loaded config. '
+                    'Valid jobs are: {}'.format(job_name, self.get_job_names()))
             return self._job_configs[job_name]
 
         if len(self._job_configs) == 1:
             return list(self._job_configs.values())[0]
 
-        raise JobNotSpecifiedError('Multiple jobs are defined in this project but you did not specify one. '
-                                   'Specify one of the following job names: {}'.format(self.get_job_names()))
+        raise JobNotSpecifiedError(
+            'Multiple jobs are defined in this project but you did not specify one. '
+            'Specify one of the following job names: {}'.format(
+                self.get_job_names()))
 
     def get_job_names(self):
         """
@@ -73,33 +75,45 @@ class ClusterRunnerConfig(object):
         :type config: dict
         """
         if not isinstance(config, dict):
-            raise ConfigParseError('The yaml config file could not be parsed to a dictionary')
+            raise ConfigParseError(
+                'The yaml config file could not be parsed to a dictionary')
 
         required_fields = {COMMANDS, ATOMIZERS}
         allowed_fields_expected_types = {
-            SETUP_BUILD: [(list, str)],  # (list, str) means this field should be a list of strings
+            SETUP_BUILD: [
+                (list, str)
+            ],  # (list, str) means this field should be a list of strings
             TEARDOWN_BUILD: [(list, str)],
             COMMANDS: [(list, str)],
-            ATOMIZERS: [(list, dict)],  # (list, dict) means this field should be a list of dicts
+            ATOMIZERS: [
+                (list, dict)
+            ],  # (list, dict) means this field should be a list of dicts
             MAX_EXECUTORS: [int],
             MAX_EXECUTORS_PER_SLAVE: [int],
         }
 
         for job_name, job_config_sections in config.items():
             if not isinstance(job_config_sections, dict):
-                raise ConfigValidationError('Invalid definition in project yaml file for job "{}".'.format(job_name))
+                raise ConfigValidationError(
+                    'Invalid definition in project yaml file for job "{}".'.format(
+                        job_name))
 
             missing_required_fields = required_fields - job_config_sections.keys()
             if missing_required_fields:
-                raise ConfigValidationError('Definition for job "{}" in project yaml is missing required config '
-                                            'sections: {}.'.format(job_name, missing_required_fields))
+                raise ConfigValidationError(
+                    'Definition for job "{}" in project yaml is missing required config '
+                    'sections: {}.'.format(job_name, missing_required_fields))
 
-            for config_section_name, config_section_value in job_config_sections.items():
+            for config_section_name, config_section_value in job_config_sections.items(
+            ):
                 if config_section_name not in allowed_fields_expected_types:
-                    raise ConfigValidationError('Definition for job "{}" in project yaml contains an invalid config '
-                                                'section "{}".'.format(job_name, config_section_name))
+                    raise ConfigValidationError(
+                        'Definition for job "{}" in project yaml contains an invalid config '
+                        'section "{}".'.format(job_name, config_section_name))
 
-                expected_section_types = allowed_fields_expected_types[config_section_name]
+                expected_section_types = allowed_fields_expected_types[
+                    config_section_name
+                ]
                 actual_section_type = type(config_section_value)
                 if actual_section_type is list:
                     # also check the type of the list items (assuming all list items have the same type as the first)
@@ -108,8 +122,9 @@ class ClusterRunnerConfig(object):
                 if actual_section_type not in expected_section_types:
                     raise ConfigValidationError(
                         'Definition for job "{}" in project yaml contains an invalid value for config section "{}". '
-                        'Parser expected one of {} but found {}.'
-                        .format(job_name, config_section_name, expected_section_types, actual_section_type))
+                        'Parser expected one of {} but found {}.'.format(
+                            job_name, config_section_name,
+                            expected_section_types, actual_section_type))
 
     def _set_config(self, config):
         """
@@ -118,8 +133,10 @@ class ClusterRunnerConfig(object):
         :param config: Config values for one or more jobs, with job names as the keys
         :type config: dict [str, dict]
         """
-        self._job_configs = {job_name: self._construct_job_config(job_name, job_values)
-                             for job_name, job_values in config.items()}
+        self._job_configs = {
+            job_name: self._construct_job_config(job_name, job_values)
+            for job_name, job_values in config.items()
+        }
 
         if len(self._job_configs) == 0:
             raise ConfigParseError('No jobs found in the config.')
@@ -135,16 +152,21 @@ class ClusterRunnerConfig(object):
         :rtype: JobConfig
         """
         # Each value should be transformed from a list of commands to a single command string.
-        setup_build = self._shell_command_list_to_single_command(job_values.get(SETUP_BUILD))
-        teardown_build = self._shell_command_list_to_single_command(job_values.get(TEARDOWN_BUILD))
-        command = self._shell_command_list_to_single_command(job_values[COMMANDS])
+        setup_build = self._shell_command_list_to_single_command(
+            job_values.get(SETUP_BUILD))
+        teardown_build = self._shell_command_list_to_single_command(
+            job_values.get(TEARDOWN_BUILD))
+        command = self._shell_command_list_to_single_command(
+            job_values[COMMANDS])
 
         atomizer = Atomizer(job_values[ATOMIZERS])
-        max_executors = job_values.get(MAX_EXECUTORS, self.DEFAULT_MAX_EXECUTORS)
-        max_executors_per_slave = job_values.get(MAX_EXECUTORS_PER_SLAVE, self.DEFAULT_MAX_EXECUTORS)
+        max_executors = job_values.get(MAX_EXECUTORS,
+                                       self.DEFAULT_MAX_EXECUTORS)
+        max_executors_per_slave = job_values.get(MAX_EXECUTORS_PER_SLAVE,
+                                                 self.DEFAULT_MAX_EXECUTORS)
 
-        return JobConfig(job_name, setup_build, teardown_build, command, atomizer, max_executors,
-                         max_executors_per_slave)
+        return JobConfig(job_name, setup_build, teardown_build, command,
+                         atomizer, max_executors, max_executors_per_slave)
 
     def _shell_command_list_to_single_command(self, commands):
         """

@@ -37,7 +37,9 @@ class BuildRequestHandler(object):
         self._builds_waiting_for_slaves = Queue()
         self._request_queue = Queue()
         self._request_queue_worker_thread = SafeThread(
-            target=self._build_preparation_loop, name='RequestHandlerLoop', daemon=True)
+            target=self._build_preparation_loop,
+            name='RequestHandlerLoop',
+            daemon=True)
         self._project_preparation_locks = {}
 
     def start(self):
@@ -45,7 +47,8 @@ class BuildRequestHandler(object):
         Start the infinite loop that will accept unprepared builds and put them through build preparation.
         """
         if self._request_queue_worker_thread.is_alive():
-            raise RuntimeError('Error: build request handler loop was asked to start when its already running.')
+            raise RuntimeError(
+                'Error: build request handler loop was asked to start when its already running.')
         self._request_queue_worker_thread.start()
 
     def handle_build_request(self, build):
@@ -54,7 +57,8 @@ class BuildRequestHandler(object):
         :type build: Build
         """
         self._request_queue.put(build)
-        analytics.record_event(analytics.BUILD_REQUEST_QUEUED, build_id=build.build_id(),
+        analytics.record_event(analytics.BUILD_REQUEST_QUEUED,
+                               build_id=build.build_id(),
                                log_msg='Queued request for build {build_id}.')
 
     def next_prepared_build(self):
@@ -78,36 +82,45 @@ class BuildRequestHandler(object):
             project_id = build.project_type.project_id()
 
             if project_id not in self._project_preparation_locks:
-                self._logger.info('Creating project lock [{}] for build {}', project_id, str(build.build_id()))
+                self._logger.info('Creating project lock [{}] for build {}',
+                                  project_id, str(build.build_id()))
                 self._project_preparation_locks[project_id] = Lock()
 
             project_lock = self._project_preparation_locks[project_id]
-            SafeThread(
-                target=self._prepare_build_async,
-                name='Bld{}-PreparationThread'.format(build.build_id()),
-                args=(build, project_lock)
-            ).start()
+            SafeThread(target=self._prepare_build_async,
+                       name='Bld{}-PreparationThread'.format(build.build_id()),
+                       args=(build, project_lock)).start()
 
     def _prepare_build_async(self, build, project_lock):
         """
         :type build: Build
         :type project_lock: Lock
         """
-        self._logger.info('Build {} is waiting for the project lock', build.build_id())
+        self._logger.info('Build {} is waiting for the project lock',
+                          build.build_id())
 
         with project_lock:
-            self._logger.info('Build {} has acquired project lock', build.build_id())
-            analytics.record_event(analytics.BUILD_PREPARE_START, build_id=build.build_id(),
-                                   log_msg='Build preparation loop is handling request for build {build_id}.')
+            self._logger.info('Build {} has acquired project lock',
+                              build.build_id())
+            analytics.record_event(
+                analytics.BUILD_PREPARE_START,
+                build_id=build.build_id(),
+                log_msg=
+                'Build preparation loop is handling request for build {build_id}.')
             try:
                 self._prepare_build(build)
                 if not build.has_error:
-                    analytics.record_event(analytics.BUILD_PREPARE_FINISH, build_id=build.build_id(),
-                                           log_msg='Build {build_id} successfully prepared and waiting for slaves.')
+                    analytics.record_event(
+                        analytics.BUILD_PREPARE_FINISH,
+                        build_id=build.build_id(),
+                        log_msg=
+                        'Build {build_id} successfully prepared and waiting for slaves.')
                     self._builds_waiting_for_slaves.put(build)
             except Exception as ex:  # pylint: disable=broad-except
                 build.mark_failed(str(ex))
-                self._logger.exception('Could not handle build request for build {}.'.format(build.build_id()))
+                self._logger.exception(
+                    'Could not handle build request for build {}.'.format(
+                        build.build_id()))
 
     def _prepare_build(self, build):
         """
@@ -120,7 +133,8 @@ class BuildRequestHandler(object):
         build_request = build.build_request
 
         if not isinstance(build_request, BuildRequest):
-            raise RuntimeError('Build {} has no associated request object.'.format(build_id))
+            raise RuntimeError(
+                'Build {} has no associated request object.'.format(build_id))
 
         project_type = build.project_type
         if not isinstance(project_type, ProjectType):
@@ -129,14 +143,17 @@ class BuildRequestHandler(object):
         self._logger.info('Fetching project for build {}.', build_id)
         project_type.fetch_project()
 
-        self._logger.info('Successfully fetched project for build {}.', build_id)
+        self._logger.info('Successfully fetched project for build {}.',
+                          build_id)
         job_config = project_type.job_config()
 
         if job_config is None:
-            build.mark_failed('Build failed while trying to parse cluster_runner.yaml.')
+            build.mark_failed(
+                'Build failed while trying to parse cluster_runner.yaml.')
             return
 
-        subjobs = self._compute_subjobs_for_build(build_id, job_config, project_type)
+        subjobs = self._compute_subjobs_for_build(build_id, job_config,
+                                                  project_type)
         build.prepare(subjobs, job_config)
 
     def _compute_subjobs_for_build(self, build_id, job_config, project_type):
@@ -151,21 +168,21 @@ class BuildRequestHandler(object):
 
         # Group the atoms together using some grouping strategy
         timing_file_path = project_type.timing_file_path(job_config.name)
-        grouped_atoms = self._grouped_atoms(
-            atoms_list,
-            job_config.max_executors,
-            timing_file_path,
-            project_type.project_directory
-        )
+        grouped_atoms = self._grouped_atoms(atoms_list,
+                                            job_config.max_executors,
+                                            timing_file_path,
+                                            project_type.project_directory)
 
         # Generate subjobs for each group of atoms
         subjobs = []
         for subjob_id in range(len(grouped_atoms)):
             atoms = grouped_atoms[subjob_id]
-            subjobs.append(Subjob(build_id, subjob_id, project_type, job_config, atoms))
+            subjobs.append(Subjob(build_id, subjob_id, project_type,
+                                  job_config, atoms))
         return subjobs
 
-    def _grouped_atoms(self, atoms, max_executors, timing_file_path, project_directory):
+    def _grouped_atoms(self, atoms, max_executors, timing_file_path,
+                       project_directory):
         """
         Return atoms that are grouped for optimal CI performance.
 
@@ -189,10 +206,13 @@ class BuildRequestHandler(object):
                 try:
                     atom_time_map = json.load(json_file)
                 except ValueError:
-                    self._logger.warning('Failed to load timing data from file that exists {}', timing_file_path)
+                    self._logger.warning(
+                        'Failed to load timing data from file that exists {}',
+                        timing_file_path)
 
         if atom_time_map is not None and len(atom_time_map) > 0:
-            atom_grouper = TimeBasedAtomGrouper(atoms, max_executors, atom_time_map, project_directory)
+            atom_grouper = TimeBasedAtomGrouper(
+                atoms, max_executors, atom_time_map, project_directory)
         else:
             atom_grouper = AtomGrouper(atoms, max_executors)
 

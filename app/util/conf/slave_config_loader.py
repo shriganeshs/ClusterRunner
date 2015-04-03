@@ -37,4 +37,5 @@ class SlaveConfigLoader(BaseConfigLoader):
         conf.set('artifact_directory', join(base_directory, 'artifacts'))
         # where to store results on the slave
         conf.set('results_directory', join(base_directory, 'results', 'slave'))
-        conf.set('timings_directory', join(base_directory, 'timings', 'master'))  # timing data
+        conf.set('timings_directory', join(base_directory, 'timings',
+                                           'master'))  # timing data

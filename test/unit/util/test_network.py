@@ -14,7 +14,8 @@ class TestNetwork(BaseUnitTestCase):
         self.assertIsNone(rsa_key)
 
     def test_rsa_key_returns_output_without_ssh_rsa_str(self):
-        self._patch_popen_call_to_ssh_keyscan(0, b"a_host ssh-rsa thebytearray", None)
+        self._patch_popen_call_to_ssh_keyscan(
+            0, b"a_host ssh-rsa thebytearray", None)
         rsa_key = Network.rsa_key('a_host')
         self.assertEquals(rsa_key, 'thebytearray')
 
@@ -23,19 +24,24 @@ class TestNetwork(BaseUnitTestCase):
         self.assertFalse(Network.are_hosts_same('fail1', 'fail2'))
 
     def test_are_hosts_same_returns_true_if_rsa_keys_match(self):
-        self._patch_popen_call_to_ssh_keyscan(0, b"a_host ssh-rsa the_same_byte_array", None)
+        self._patch_popen_call_to_ssh_keyscan(
+            0, b"a_host ssh-rsa the_same_byte_array", None)
         self.assertTrue(Network.are_hosts_same('host1', 'host1_alias'))
 
     def test_are_hosts_same_returns_false_if_rsa_keys_dont_match(self):
         def popen_side_effect(*args, **kwargs):
             if args[0] == 'ssh-keyscan -t rsa host_a':
                 mock_popen = Mock()
-                mock_popen.communicate.return_value = [b"a_host ssh-rsa the_value_a", None]
+                mock_popen.communicate.return_value = [
+                    b"a_host ssh-rsa the_value_a", None
+                ]
                 mock_popen.returncode = 0
                 return mock_popen
             elif args[0] == 'ssh-keyscan -t rsa host_b':
                 mock_popen = Mock()
-                mock_popen.communicate.return_value = [b"a_host ssh-rsa the_other_value_b", None]
+                mock_popen.communicate.return_value = [
+                    b"a_host ssh-rsa the_other_value_b", None
+                ]
                 mock_popen.returncode = 0
                 return mock_popen
             else:

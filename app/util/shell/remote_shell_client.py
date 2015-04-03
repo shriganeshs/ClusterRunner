@@ -15,8 +15,12 @@ class RemoteShellClient(ShellClient):
         :rtype: Response
         """
         escaped_command = self._escaped_ssh_command(command)
-        self._logger.debug('SSH popen async [{}:{}]: {}'.format(self.user, self.host, escaped_command))
-        proc = Popen(escaped_command, shell=True, stdout=DEVNULL, stderr=DEVNULL)
+        self._logger.debug('SSH popen async [{}:{}]: {}'.format(
+            self.user, self.host, escaped_command))
+        proc = Popen(escaped_command,
+                     shell=True,
+                     stdout=DEVNULL,
+                     stderr=DEVNULL)
         return EmptyResponse()
 
     def _exec_command_on_client_blocking(self, command):
@@ -25,10 +29,13 @@ class RemoteShellClient(ShellClient):
         :rtype: Response
         """
         escaped_command = self._escaped_ssh_command(command)
-        self._logger.debug('SSH popen blocking [{}:{}]: {}'.format(self.user, self.host, escaped_command))
+        self._logger.debug('SSH popen blocking [{}:{}]: {}'.format(
+            self.user, self.host, escaped_command))
         proc = Popen(escaped_command, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = proc.communicate()
-        return Response(raw_output=output, raw_error=error, returncode=proc.returncode)
+        return Response(raw_output=output,
+                        raw_error=error,
+                        returncode=proc.returncode)
 
     def _copy_on_client(self, source, destination):
         """
@@ -37,11 +44,15 @@ class RemoteShellClient(ShellClient):
         :rtype: Response
         """
         # Avoid any ssh known_hosts prompts.
-        command = 'scp -o StrictHostKeyChecking=no {} {}:{}'.format(source, self._host_string(), destination)
-        self._logger.debug('SCP popen blocking [{}:{}]: {}'.format(self.user, self.host, command))
+        command = 'scp -o StrictHostKeyChecking=no {} {}:{}'.format(
+            source, self._host_string(), destination)
+        self._logger.debug('SCP popen blocking [{}:{}]: {}'.format(
+            self.user, self.host, command))
         proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
         output, error = proc.communicate()
-        return Response(raw_output=output, raw_error=error, returncode=proc.returncode)
+        return Response(raw_output=output,
+                        raw_error=error,
+                        returncode=proc.returncode)
 
     def _escaped_ssh_command(self, command):
         """
@@ -52,7 +63,8 @@ class RemoteShellClient(ShellClient):
         """
         escaped_command = command.replace("'", "\'")
         # Avoid any ssh known_hosts prompts.
-        return "ssh -o StrictHostKeyChecking=no {} '{}'".format(self._host_string(), escaped_command)
+        return "ssh -o StrictHostKeyChecking=no {} '{}'".format(
+            self._host_string(), escaped_command)
 
     def _host_string(self):
         """
@@ -60,4 +72,5 @@ class RemoteShellClient(ShellClient):
 
         :rtype: str
         """
-        return self.host if self.user is None else "{}@{}".format(self.user, self.host)
+        return self.host if self.user is None else "{}@{}".format(self.user,
+                                                                  self.host)

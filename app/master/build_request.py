@@ -42,7 +42,6 @@ from app.util import util
 
 
 class BuildRequest(object):
-
     def __init__(self, build_parameters):
         """
         :param build_parameters: A dictionary of request parameters
@@ -60,7 +59,8 @@ class BuildRequest(object):
         :return: whether the parameters are valid or not
         :rtype: bool
         """
-        missing_parameters = set(self.required_parameters()) - self._build_parameters.keys()
+        missing_parameters = set(
+            self.required_parameters()) - self._build_parameters.keys()
         return self.is_valid_type() and not missing_parameters
 
     def is_valid_type(self):

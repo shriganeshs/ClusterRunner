@@ -2,7 +2,6 @@ from app.util.conf.base_config_loader import BaseConfigLoader
 
 
 class StopConfigLoader(BaseConfigLoader):
-
     def configure_defaults(self, conf):
         """
         These are the slave configuration defaults. These values can override values in BaseConfigLoader.

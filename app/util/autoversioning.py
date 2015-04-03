@@ -5,12 +5,13 @@ import sys
 from app.util import fs
 from app.util import package_version
 
-
 _MAJOR_MINOR_VERSION = '0.5'
 
 _calculated_version = None  # We will cache the calculated version so that it can't change during execution.
-_VERSION_FILE_PATH = os.path.join(os.path.dirname(__file__), 'package_version.py')
-_VERSION_FILE_BACKUP_PATH = os.path.join(os.path.dirname(__file__), 'package_version.py.bak')
+_VERSION_FILE_PATH = os.path.join(os.path.dirname(__file__),
+                                  'package_version.py')
+_VERSION_FILE_BACKUP_PATH = os.path.join(os.path.dirname(__file__),
+                                         'package_version.py.bak')
 
 
 def get_version():
@@ -37,9 +38,11 @@ def write_package_version_file(package_version_string):
     :param package_version_string: The version to write to the file -- presumably the output of get_version()
     :type package_version_string: str
     """
-    package_version_file_contents = 'version = "{}"  # DO NOT COMMIT\n'.format(package_version_string)
+    package_version_file_contents = 'version = "{}"  # DO NOT COMMIT\n'.format(
+        package_version_string)
 
-    os.rename(_VERSION_FILE_PATH, _VERSION_FILE_BACKUP_PATH)  # Backup the original file.
+    os.rename(_VERSION_FILE_PATH,
+              _VERSION_FILE_BACKUP_PATH)  # Backup the original file.
     fs.write_file(package_version_file_contents, _VERSION_FILE_PATH)
 
 
@@ -79,12 +82,16 @@ def _calculate_source_version():
     if _calculated_version is None:
         try:
             head_commit_hash = _get_commit_hash_from_revision_param('HEAD')
-            head_commit_is_on_trunk = _is_commit_hash_in_masters_first_parent_chain(head_commit_hash)
+            head_commit_is_on_trunk = _is_commit_hash_in_masters_first_parent_chain(
+                head_commit_hash)
 
             commit_count = _get_repo_commit_count()
-            hash_extension = '' if head_commit_is_on_trunk else '-{}'.format(head_commit_hash[:7])
+            hash_extension = '' if head_commit_is_on_trunk else '-{}'.format(
+                head_commit_hash[:7])
             mod_extension = '' if not _repo_has_uncommited_changes() else '-mod'
-            _calculated_version = '{}.{}{}{}'.format(_MAJOR_MINOR_VERSION, commit_count, hash_extension, mod_extension)
+            _calculated_version = '{}.{}{}{}'.format(
+                _MAJOR_MINOR_VERSION, commit_count, hash_extension,
+                mod_extension)
 
         except subprocess.CalledProcessError:
             _calculated_version = '{}.???'.format(_MAJOR_MINOR_VERSION)
@@ -127,8 +134,7 @@ def _is_commit_hash_in_masters_first_parent_chain(commit_hash):
     """
     master_commit_hash = _get_commit_hash_from_revision_param('origin/master')
     first_parent_chain = _execute_local_git_command(
-        'rev-list',
-        '--first-parent',
+        'rev-list', '--first-parent',
         '{}^..{}'.format(commit_hash, master_commit_hash)).split()
     return commit_hash in first_parent_chain
 
@@ -140,7 +146,8 @@ def _get_commit_hash_from_revision_param(revision_param):
     :type revision_param: str
     :rtype: str
     """
-    return _execute_local_git_command('rev-parse', '--verify', revision_param).strip()
+    return _execute_local_git_command('rev-parse', '--verify',
+                                      revision_param).strip()
 
 
 def _execute_local_git_command(*args):
@@ -153,8 +160,6 @@ def _execute_local_git_command(*args):
     :return: The output of the git command
     :rtype: str
     """
-    command_output = subprocess.check_output(
-        ['git'] + list(args),
-        cwd=os.path.dirname(__file__),
-    )
+    command_output = subprocess.check_output(['git'] + list(args),
+                                             cwd=os.path.dirname(__file__), )
     return command_output.decode()

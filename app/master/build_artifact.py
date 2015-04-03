@@ -39,13 +39,15 @@ class BuildArtifact(object):
         # If file doesn't exist, then write timing data no matter what
         if not os.path.isfile(timing_file_path):
             self._write_timing_data_to_file(timing_file_path, timing_data)
-            self._logger.debug('Created new timing file in {}', timing_file_path)
+            self._logger.debug('Created new timing file in {}',
+                               timing_file_path)
             return
 
         # If file exists, only overwrite timing data if there were no failures this build
         if len(self.get_failed_commands()) == 0:
             self._write_timing_data_to_file(timing_file_path, timing_data)
-            self._logger.debug('Overwrote existing timing file in {}', timing_file_path)
+            self._logger.debug('Overwrote existing timing file in {}',
+                               timing_file_path)
             return
 
         self._logger.debug('Did not write/overwrite timing data during build')
@@ -58,24 +60,35 @@ class BuildArtifact(object):
         if self._failed_commands is None:
 
             if not os.path.isdir(self.build_artifact_dir):
-                message = 'Build artifact dir {} does not exist'.format(self.build_artifact_dir)
+                message = 'Build artifact dir {} does not exist'.format(
+                    self.build_artifact_dir)
                 self._logger.error(message)
                 raise RuntimeError(message)
 
             # Find failed atoms in the artifact directory
             self._failed_commands = {}
-            for build_artifact_file_or_subdir in os.listdir(self.build_artifact_dir):
+            for build_artifact_file_or_subdir in os.listdir(
+                self.build_artifact_dir):
                 if self._is_atom_artifact_dir(build_artifact_file_or_subdir):
-                    exit_file = os.path.join(self.build_artifact_dir, build_artifact_file_or_subdir, Subjob.EXIT_CODE_FILE)
-                    command_file = os.path.join(self.build_artifact_dir, build_artifact_file_or_subdir, Subjob.COMMAND_FILE)
-                    if os.path.isfile(exit_file) and os.path.isfile(command_file):
-                        with open(exit_file, 'r') as exit_stream, open(command_file, 'r') as command_stream:
+                    exit_file = os.path.join(self.build_artifact_dir,
+                                             build_artifact_file_or_subdir,
+                                             Subjob.EXIT_CODE_FILE)
+                    command_file = os.path.join(self.build_artifact_dir,
+                                                build_artifact_file_or_subdir,
+                                                Subjob.COMMAND_FILE)
+                    if os.path.isfile(exit_file) and os.path.isfile(
+                        command_file):
+                        with open(exit_file, 'r') as exit_stream, open(
+                            command_file, 'r') as command_stream:
                             exit_code = exit_stream.readline()
                             command = command_stream.readline()
                             if int(exit_code) != 0:
-                                self._failed_commands[build_artifact_file_or_subdir] = command
+                                self._failed_commands[
+                                    build_artifact_file_or_subdir
+                                ] = command
                     else:
-                        self._logger.error("Missing clusterrunner artifacts for " + build_artifact_file_or_subdir)
+                        self._logger.error("Missing clusterrunner artifacts for "
+                                           + build_artifact_file_or_subdir)
 
         return self._failed_commands
 
@@ -94,7 +107,8 @@ class BuildArtifact(object):
         """
         failed_atoms = self.get_failed_commands()
         if len(failed_atoms) > 0:
-            with open(os.path.join(self.build_artifact_dir, 'failures.txt'), 'w') as f:
+            with open(os.path.join(self.build_artifact_dir, 'failures.txt'),
+                      'w') as f:
                 f.write("\n".join(failed_atoms))
 
     def _write_timing_data_to_file(self, path, timing_data):

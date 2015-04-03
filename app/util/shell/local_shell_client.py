@@ -17,7 +17,8 @@ class LocalShellClient(ShellClient):
         :rtype: Response
         """
         # todo investigate why this assignment is required for launching async operations using Popen
-        self._logger.debug('popen async [{}:{}]: {}'.format(self.user, self.host, command))
+        self._logger.debug(
+            'popen async [{}:{}]: {}'.format(self.user, self.host, command))
         proc = Popen(command, shell=True, stdout=DEVNULL, stderr=DEVNULL)
         return EmptyResponse()
 
@@ -29,9 +30,12 @@ class LocalShellClient(ShellClient):
         :rtype: Response
         """
         proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
-        self._logger.debug('popen blocking [{}:{}]: {}'.format(self.user, self.host, command))
+        self._logger.debug(
+            'popen blocking [{}:{}]: {}'.format(self.user, self.host, command))
         output, error = proc.communicate()
-        return Response(raw_output=output, raw_error=error, returncode=proc.returncode)
+        return Response(raw_output=output,
+                        raw_error=error,
+                        returncode=proc.returncode)
 
     def _copy_on_client(self, source, destination):
         """

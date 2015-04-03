@@ -33,7 +33,8 @@ class UnhandledExceptionHandler(Singleton):
     def __init__(self):
         super().__init__()
         self._handling_lock = Lock()
-        self._teardown_callback_stack = LifoQueue()  # we execute callbacks in the reverse order that they were added
+        self._teardown_callback_stack = LifoQueue(
+        )  # we execute callbacks in the reverse order that they were added
         self._logger = log.get_logger(__name__)
         self._handled_exceptions = Queue()
         self._teardown_callback_raised_exception = False
@@ -53,11 +54,16 @@ class UnhandledExceptionHandler(Singleton):
         want to inherit all the signal handlers.
         """
         signals_to_reset = dict(cls._signal_names)
-        signals_to_reset.pop(cls.SIGINFO, None)  # Leave the SIGINFO handler for forked subprocesses
+        signals_to_reset.pop(
+            cls.SIGINFO, None
+        )  # Leave the SIGINFO handler for forked subprocesses
         for signal_num in signals_to_reset:
-            signal.signal(signal_num, signal.SIG_DFL)  # SIG_DFL restores the default behavior for each signal
+            signal.signal(
+                signal_num, signal.SIG_DFL
+            )  # SIG_DFL restores the default behavior for each signal
 
-    def add_teardown_callback(self, callback, *callback_args, **callback_kwargs):
+    def add_teardown_callback(self, callback, *callback_args,
+                              **callback_kwargs):
         """
         Add a callback to be executed in the event of application teardown.
 
@@ -68,7 +74,8 @@ class UnhandledExceptionHandler(Singleton):
         :param callback_kwargs: kwargs to be passed to the callback function
         :type callback_kwargs: dict
         """
-        self._teardown_callback_stack.put((callback, callback_args, callback_kwargs))
+        self._teardown_callback_stack.put(
+            (callback, callback_args, callback_kwargs))
 
     def _application_teardown_signal_handler(self, sig, frame):
         """
@@ -79,7 +86,8 @@ class UnhandledExceptionHandler(Singleton):
         :param frame: The interrupted stack frame
         :type frame: frame
         """
-        self._logger.info('{} signal received. Triggering teardown.', self._signal_names[sig])
+        self._logger.info('{} signal received. Triggering teardown.',
+                          self._signal_names[sig])
         raise AppTeardown
 
     def _application_info_dump_signal_handler(self, sig, frame):
@@ -91,7 +99,8 @@ class UnhandledExceptionHandler(Singleton):
         :param frame: The interrupted stack frame
         :type frame: frame
         """
-        self._logger.info('{} signal received. Dumping application info.', self._signal_names[sig])
+        self._logger.info('{} signal received. Dumping application info.',
+                          self._signal_names[sig])
         app_info_string = app_info.get_app_info_string()
         self._logger.notice(app_info_string)
         with open(self._SIGINFO_DEBUG_LOG, 'a') as f:
@@ -134,20 +143,25 @@ class UnhandledExceptionHandler(Singleton):
             # An exception occurred during execution, so run the teardown callbacks. We use a lock here since multiple
             # threads could raise exceptions at the same time and we only want to execute these once.
             with self._handling_lock:
-                if not isinstance(exc_value, (SystemExit, AppTeardown, KeyboardInterrupt)):
+                if not isinstance(exc_value,
+                                  (SystemExit, AppTeardown, KeyboardInterrupt)):
                     # It is not very useful to log the SystemExit exception since it is raised by sys.exit(), and thus
                     # application exit is completely expected.
-                    self._logger.exception('Unhandled exception handler caught exception.')
+                    self._logger.exception(
+                        'Unhandled exception handler caught exception.')
 
                 while not self._teardown_callback_stack.empty():
                     callback, args, kwargs = self._teardown_callback_stack.get()
-                    self._logger.debug('Executing teardown callback: {}', callback)
+                    self._logger.debug('Executing teardown callback: {}',
+                                       callback)
                     try:
                         callback(*args, **kwargs)
                     except:  # pylint: disable=bare-except
                         # Also catch any exception that occurs during a teardown callback and log it.
                         self._teardown_callback_raised_exception = True
-                        self._logger.exception('Exception raised by teardown callback {}', callback)
+                        self._logger.exception(
+                            'Exception raised by teardown callback {}',
+                            callback)
 
                 self._handled_exceptions.put(exc_value)
 

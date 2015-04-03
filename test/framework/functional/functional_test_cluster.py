@@ -35,7 +35,8 @@ class FunctionalTestCluster(object):
         self._slave_eventlog_names = []
         self._next_slave_port = self._SLAVE_START_PORT
 
-        clusterrunner_repo_dir = dirname(dirname(dirname(dirname(realpath(__file__)))))
+        clusterrunner_repo_dir = dirname(
+            dirname(dirname(dirname(realpath(__file__)))))
         self._app_executable = join(clusterrunner_repo_dir, 'main.py')
 
     def start_master(self):
@@ -59,8 +60,10 @@ class FunctionalTestCluster(object):
         :return: A list of API client objects through which API calls to each slave can be made
         :rtype: list[ClusterSlaveAPIClient]
         """
-        new_slaves = self._start_slave_processes(num_slaves, num_executors_per_slave)
-        return [ClusterSlaveAPIClient(base_api_url=slave.url) for slave in new_slaves]
+        new_slaves = self._start_slave_processes(num_slaves,
+                                                 num_executors_per_slave)
+        return [ClusterSlaveAPIClient(base_api_url=slave.url)
+                for slave in new_slaves]
 
     def start_slave(self, **kwargs):
         """
@@ -77,7 +80,8 @@ class FunctionalTestCluster(object):
 
     @property
     def slave_api_clients(self):
-        return [ClusterSlaveAPIClient(base_api_url=slave.url) for slave in self.slaves]
+        return [ClusterSlaveAPIClient(base_api_url=slave.url)
+                for slave in self.slaves]
 
     def _start_master_process(self):
         """
@@ -87,28 +91,31 @@ class FunctionalTestCluster(object):
         :rtype: ClusterService
         """
         if self.master:
-            raise RuntimeError('Master service was already started for this cluster.')
+            raise RuntimeError(
+                'Master service was already started for this cluster.')
 
         popen_kwargs = {}
         if not self._verbose:
-            popen_kwargs.update({'stdout': DEVNULL, 'stderr': DEVNULL})  # hide output of master process
+            popen_kwargs.update({'stdout': DEVNULL,
+                                 'stderr':
+                                 DEVNULL})  # hide output of master process
 
-        self._master_eventlog_name = tempfile.NamedTemporaryFile(delete=False).name
+        self._master_eventlog_name = tempfile.NamedTemporaryFile(
+            delete=False).name
         master_hostname = 'localhost'
-        master_cmd = [
-            self._app_executable,
-            'master',
-            '--port', str(self._MASTER_PORT),
-            '--eventlog-file', self._master_eventlog_name,
-            '--config-file', self._conf_file_path,
-        ]
+        master_cmd = [self._app_executable,
+                      'master',
+                      '--port',
+                      str(self._MASTER_PORT),
+                      '--eventlog-file',
+                      self._master_eventlog_name,
+                      '--config-file',
+                      self._conf_file_path, ]
 
         # Don't use shell=True in the Popen here; the kill command might only kill "sh -c", not the actual process.
-        self.master = ClusterService(
-            Popen(master_cmd, **popen_kwargs),
-            host=master_hostname,
-            port=self._MASTER_PORT,
-        )
+        self.master = ClusterService(Popen(master_cmd, **popen_kwargs),
+                                     host=master_hostname,
+                                     port=self._MASTER_PORT, )
         self._block_until_master_ready()  # wait for master to start up
         return self.master
 
@@ -120,10 +127,13 @@ class FunctionalTestCluster(object):
         :param timeout: Max number of seconds to wait before raising an exception
         :type timeout: int
         """
-        is_master_ready = functools.partial(self._is_url_responsive, self.master.url)
-        master_is_ready = poll.wait_for(is_master_ready, timeout_seconds=timeout)
+        is_master_ready = functools.partial(self._is_url_responsive,
+                                            self.master.url)
+        master_is_ready = poll.wait_for(is_master_ready,
+                                        timeout_seconds=timeout)
         if not master_is_ready:
-            raise TestClusterTimeoutError('Master service did not start up before timeout.')
+            raise TestClusterTimeoutError(
+                'Master service did not start up before timeout.')
 
     def _start_slave_processes(self, num_slaves, num_executors_per_slave):
         """
@@ -138,7 +148,9 @@ class FunctionalTestCluster(object):
         """
         popen_kwargs = {}
         if not self._verbose:
-            popen_kwargs.update({'stdout': DEVNULL, 'stderr': DEVNULL})  # hide output of slave process
+            popen_kwargs.update({'stdout': DEVNULL,
+                                 'stderr':
+                                 DEVNULL})  # hide output of slave process
 
         slave_hostname = 'localhost'
         new_slaves = []
@@ -146,25 +158,27 @@ class FunctionalTestCluster(object):
             slave_port = self._next_slave_port
             self._next_slave_port += 1
 
-            slave_eventlog = tempfile.NamedTemporaryFile().name  # each slave writes to its own file to avoid collision
+            slave_eventlog = tempfile.NamedTemporaryFile(
+            ).name  # each slave writes to its own file to avoid collision
             self._slave_eventlog_names.append(slave_eventlog)
 
-            slave_cmd = [
-                self._app_executable,
-                'slave',
-                '--port', str(slave_port),
-                '--num-executors', str(num_executors_per_slave),
-                '--master-url', '{}:{}'.format(self.master.host, self.master.port),
-                '--eventlog-file', slave_eventlog,
-                '--config-file', self._conf_file_path,
-            ]
+            slave_cmd = [self._app_executable,
+                         'slave',
+                         '--port',
+                         str(slave_port),
+                         '--num-executors',
+                         str(num_executors_per_slave),
+                         '--master-url',
+                         '{}:{}'.format(self.master.host, self.master.port),
+                         '--eventlog-file',
+                         slave_eventlog,
+                         '--config-file',
+                         self._conf_file_path, ]
 
             # Don't use shell=True in the Popen here; the kill command may only kill "sh -c", not the actual process.
-            new_slaves.append(ClusterService(
-                Popen(slave_cmd, **popen_kwargs),
-                host=slave_hostname,
-                port=slave_port,
-            ))
+            new_slaves.append(ClusterService(Popen(slave_cmd, **popen_kwargs),
+                                             host=slave_hostname,
+                                             port=slave_port, ))
 
         self.slaves.extend(new_slaves)
         self._block_until_slaves_ready()
@@ -178,22 +192,27 @@ class FunctionalTestCluster(object):
         :param timeout: Max number of seconds to wait before raising an exception
         :type timeout: int
         """
-        slaves_to_check = self.slaves.copy()  # we'll remove slaves from this list as they become ready
+        slaves_to_check = self.slaves.copy(
+        )  # we'll remove slaves from this list as they become ready
 
         def are_all_slaves_ready():
-            for slave in slaves_to_check.copy():  # copy list so we can modify the original list inside the loop
+            for slave in slaves_to_check.copy(
+            ):  # copy list so we can modify the original list inside the loop
                 if self._is_url_responsive(slave.url):
                     slaves_to_check.remove(slave)
                 else:
                     return False
             return True
 
-        all_slaves_are_ready = poll.wait_for(are_all_slaves_ready, timeout_seconds=timeout)
+        all_slaves_are_ready = poll.wait_for(are_all_slaves_ready,
+                                             timeout_seconds=timeout)
         num_slaves = len(self.slaves)
         num_ready_slaves = num_slaves - len(slaves_to_check)
         if not all_slaves_are_ready:
-            raise TestClusterTimeoutError('All slaves did not start up before timeout. '
-                                          '{} of {} started successfully.'.format(num_ready_slaves, num_slaves))
+            raise TestClusterTimeoutError(
+                'All slaves did not start up before timeout. '
+                '{} of {} started successfully.'.format(num_ready_slaves,
+                                                        num_slaves))
 
     def _is_url_responsive(self, url):
         is_responsive = False
@@ -225,11 +244,16 @@ class FunctionalTestCluster(object):
             self._logger.info('Waiting on build queue to become empty.')
             return False
 
-        queue_is_empty = poll.wait_for(is_queue_empty, timeout_seconds=timeout, poll_period=1,
-                                       exceptions_to_swallow=(requests.ConnectionError, ValueError))
+        queue_is_empty = poll.wait_for(
+            is_queue_empty,
+            timeout_seconds=timeout,
+            poll_period=1,
+            exceptions_to_swallow=(requests.ConnectionError, ValueError))
         if not queue_is_empty:
-            self._logger.error('Master queue did not become empty before timeout.')
-            raise TestClusterTimeoutError('Master queue did not become empty before timeout.')
+            self._logger.error(
+                'Master queue did not become empty before timeout.')
+            raise TestClusterTimeoutError(
+                'Master queue did not become empty before timeout.')
 
     def kill_master(self):
         """
@@ -267,7 +291,8 @@ class FunctionalTestCluster(object):
         """
         services = [self.kill_master()]
         services.extend(self.kill_slaves())
-        services = [service for service in services if service is not None]  # remove `None` values from list
+        services = [service for service in services
+                    if service is not None]  # remove `None` values from list
         return services
 
 
@@ -276,6 +301,7 @@ class ClusterService(object):
     A data container that wraps a process and holds metadata about that process. This is useful for wrapping up data
     relating to the various services started by the FunctionalTestCluster (master, slaves, etc.).
     """
+
     def __init__(self, process, host, port):
         """
         :param process: The Popen process instance of the associated service
@@ -300,7 +326,9 @@ class ClusterService(object):
         :return: The return code, stdout, and stderr of the process
         :rtype: (int, str, str)
         """
-        self.return_code, self.stdout, self.stderr = process_utils.kill_gracefully(self.process, timeout=15)
+        self.return_code, self.stdout, self.stderr = process_utils.kill_gracefully(
+            self.process,
+            timeout=15)
         return self.return_code, self.stdout, self.stderr
 
     @property

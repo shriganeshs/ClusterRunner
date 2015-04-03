@@ -16,7 +16,9 @@ class TestSlave(BaseUnitTestCase):
         super().setUp()
         self.mock_network = self.patch('app.master.slave.Network').return_value
 
-    def test_disconnect_command_is_sent_during_teardown_when_slave_is_still_connected(self):
+    def test_disconnect_command_is_sent_during_teardown_when_slave_is_still_connected(
+        self
+    ):
         slave = self._create_slave()
         slave.current_build_id = 3
         slave._is_alive = True
@@ -26,44 +28,47 @@ class TestSlave(BaseUnitTestCase):
         expected_teardown_url = 'http://splinter.sensei.net:43001/v1/build/3/teardown'
         self.mock_network.post.assert_called_once_with(expected_teardown_url)
 
-    def test_disconnect_command_is_not_sent_during_teardown_when_slave_has_disconnected(self):
+    def test_disconnect_command_is_not_sent_during_teardown_when_slave_has_disconnected(
+        self
+    ):
         slave = self._create_slave()
         slave.current_build_id = 3
         slave._is_alive = False
 
         slave.teardown()
 
-        self.assertEqual(self.mock_network.post.call_count, 0,
-                         'Master should not send teardown command to slave when slave has disconnected.')
+        self.assertEqual(
+            self.mock_network.post.call_count, 0,
+            'Master should not send teardown command to slave when slave has disconnected.')
 
     def test_git_project_params_are_modified_for_slave(self):
         slave = self._create_slave()
         slave._network.post_with_digest = Mock()
 
-        build_request = BuildRequest({
-            'type': 'git',
-            'url': 'http://original-user-specified-url',
-        })
+        build_request = BuildRequest(
+            {'type': 'git',
+             'url': 'http://original-user-specified-url', })
         mock_git = Mock(slave_param_overrides=Mock(return_value={
             'url': 'ssh://new-url-for-clusterrunner-master',
             'extra': 'something_extra',
         }))
-        mock_build = MagicMock(spec=Build, num_executors_allocated=777, build_request=build_request,
-                               build_id=Mock(return_value=888), project_type=mock_git)
+        mock_build = MagicMock(spec=Build,
+                               num_executors_allocated=777,
+                               build_request=build_request,
+                               build_id=Mock(return_value=888),
+                               project_type=mock_git)
 
         slave.setup(mock_build)
 
         slave._network.post_with_digest.assert_called_with(
-            'http://{}/v1/build/888/setup'.format(self._FAKE_SLAVE_URL),
-            {
+            'http://{}/v1/build/888/setup'.format(self._FAKE_SLAVE_URL), {
                 'build_executor_start_index': 777,
                 'project_type_params': {
                     'type': 'git',
                     'url': 'ssh://new-url-for-clusterrunner-master',
-                    'extra': 'something_extra'}
-            },
-            Secret.get()
-        )
+                    'extra': 'something_extra'
+                }
+            }, Secret.get())
 
     def test_is_alive_returns_cached_value_if_use_cache_is_true(self):
         slave = self._create_slave()
@@ -82,7 +87,9 @@ class TestSlave(BaseUnitTestCase):
         self.assertFalse(is_slave_alive)
         self.assertFalse(response_mock.json.called)
 
-    def test_is_alive_returns_false_if_response_is_ok_but_is_alive_is_false(self):
+    def test_is_alive_returns_false_if_response_is_ok_but_is_alive_is_false(
+        self
+    ):
         slave = self._create_slave()
         response_mock = self.mock_network.get.return_value
         response_mock.ok = True
@@ -91,7 +98,8 @@ class TestSlave(BaseUnitTestCase):
 
         self.assertFalse(is_slave_alive)
 
-    def test_is_alive_returns_true_if_response_is_ok_and_is_alive_is_true(self):
+    def test_is_alive_returns_true_if_response_is_ok_and_is_alive_is_true(self
+                                                                         ):
         slave = self._create_slave()
         response_mock = self.mock_network.get.return_value
         response_mock.ok = True

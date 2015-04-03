@@ -2,6 +2,7 @@ class ShellClient(object):
     """
     Shell Client interface
     """
+
     def __init__(self, host, user):
         self.host = host
         self.user = user
@@ -19,15 +20,15 @@ class ShellClient(object):
         :rtype: Response
         """
         if async and error_on_failure:
-            raise NotImplementedError('async command execution and raising errors on failure is not implemented')
+            raise NotImplementedError(
+                'async command execution and raising errors on failure is not implemented')
         elif async:
             return self._exec_command_on_client_async(command)
         else:
             res = self._exec_command_on_client_blocking(command)
             if error_on_failure and not res.is_success():
                 error_message = 'Command "{}" on host "{}" as user "{}" failed with exit code: {}.'.format(
-                    command, self.host, self.user, res.returncode
-                )
+                    command, self.host, self.user, res.returncode)
                 raise RuntimeError(error_message)
             else:
                 return res
@@ -80,6 +81,7 @@ class Response(object):
     should register a callback with a response, and access use that callback to check
     completion of async operations
     """
+
     def __init__(self, raw_output=None, raw_error=None, returncode=None):
         """
         :param raw_output:
@@ -108,12 +110,9 @@ class Response(object):
         :return: True if they have member equivalence, False otherwise
         :rtype: bool
         """
-        return (
-            isinstance(other, type(self)) and
-            self.raw_output == other.raw_output and
-            self.raw_error == other.raw_error and
-            self.returncode == other.returncode
-        )
+        return (isinstance(other, type(self)) and self.raw_output ==
+                other.raw_output and self.raw_error == other.raw_error and
+                self.returncode == other.returncode)
 
 
 class EmptyResponse(Response):

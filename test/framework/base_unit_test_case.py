@@ -35,13 +35,15 @@ class BaseUnitTestCase(TestCase):
 
         # Stub out a few library dependencies that launch subprocesses.
         self.patch('app.util.autoversioning.get_version').return_value = '0.0.0'
-        self.patch('app.util.conf.base_config_loader.platform.node').return_value = self._fake_hostname
+        self.patch(
+            'app.util.conf.base_config_loader.platform.node').return_value = self._fake_hostname
 
         if self._do_network_mocks:
             # requests.Session() also makes some subprocess calls on instantiation.
             self.patch('app.util.network.requests.Session')
             # Stub out Network.are_hosts_same() call with a simple string comparison.
-            self.patch('app.util.network.Network.are_hosts_same', new=lambda host_a, host_b: host_a == host_b)
+            self.patch('app.util.network.Network.are_hosts_same',
+                       new=lambda host_a, host_b: host_a == host_b)
 
         # Reset singletons so that they get recreated for every test that uses them.
         Configuration.reset_singleton()
@@ -53,7 +55,8 @@ class BaseUnitTestCase(TestCase):
 
         MasterConfigLoader().configure_defaults(Configuration.singleton())
         MasterConfigLoader().configure_postload(Configuration.singleton())
-        self.patch('app.util.conf.master_config_loader.MasterConfigLoader.load_from_config_file')
+        self.patch(
+            'app.util.conf.master_config_loader.MasterConfigLoader.load_from_config_file')
 
         # Reset counters
         Slave._slave_id_counter = Counter()
@@ -75,17 +78,22 @@ class BaseUnitTestCase(TestCase):
         super().tearDown()
         # Pop all log handlers off the stack so that we start fresh on the next test. This includes the TestHandler
         # pushed in setUp() and any handlers that may have been pushed during test execution.
-        with suppress(AssertionError):  # AssertionError is raised once all handlers have been popped off the stack.
+        with suppress(
+            AssertionError):  # AssertionError is raised once all handlers have been popped off the stack.
             while True:
                 logbook.Handler.stack_manager.pop_application()
 
         self._base_teardown_called = True
 
     def _assert_base_setup_and_teardown_were_called(self):
-        self.assertTrue(self._base_setup_called,
-                        '{} must call super().setUp() in its setUp() method.'.format(self.__class__.__name__))
-        self.assertTrue(self._base_teardown_called,
-                        '{} must call super().tearDown() in its tearDown() method.'.format(self.__class__.__name__))
+        self.assertTrue(
+            self._base_setup_called,
+            '{} must call super().setUp() in its setUp() method.'.format(
+                self.__class__.__name__))
+        self.assertTrue(
+            self._base_teardown_called,
+            '{} must call super().tearDown() in its tearDown() method.'.format(
+                self.__class__.__name__))
 
     def patch(self, target, allow_repatch=False, **kwargs):
         """
@@ -123,13 +131,17 @@ class BaseUnitTestCase(TestCase):
         # patcher.start() method will raise a TypeError anyway, but there are certain cases where this doesn't happen
         # reliably (e.g., 'os.unlink') so this check is an attempt to make that detection reliable.
         elif isinstance(item_to_patch, NonCallableMock):
-            raise UnitTestPatchError('Target "{}" is already a mock. Has this target already been patched either in '
-                                     'this class ({}) or in BaseUnitTestCase?'.format(target, self.__class__.__name__))
+            raise UnitTestPatchError(
+                'Target "{}" is already a mock. Has this target already been patched either in '
+                'this class ({}) or in BaseUnitTestCase?'.format(
+                    target, self.__class__.__name__))
         try:
             mock = patcher.start()
         except TypeError as ex:
-            raise UnitTestPatchError('Could not patch "{}". Has this target already been patched either in this class '
-                                     '({}) or in BaseUnitTestCase?'.format(target, self.__class__.__name__)) from ex
+            raise UnitTestPatchError(
+                'Could not patch "{}". Has this target already been patched either in this class '
+                '({}) or in BaseUnitTestCase?'.format(
+                    target, self.__class__.__name__)) from ex
 
         self._patched_items[mock] = patcher, allow_repatch
         return mock
@@ -162,7 +174,8 @@ class BaseUnitTestCase(TestCase):
             patcher, _ = self._patched_items.pop(item_to_patch)
             patcher.stop()
         else:
-            raise ValueError('Cannot unpatch target "{}" since it has not been patched!')
+            raise ValueError(
+                'Cannot unpatch target "{}" since it has not been patched!')
 
     def patch_abspath(self, abspath_target, cwd='/my_current_directory/'):
         """
@@ -174,6 +187,7 @@ class BaseUnitTestCase(TestCase):
         :param cwd: The fake current working directory that will be prepended to non-absolute input paths
         :type cwd: str
         """
+
         def fake_abspath(path):
             if not os.path.isabs(path):
                 path = os.path.join(cwd, path)
@@ -202,19 +216,42 @@ class BaseUnitTestCase(TestCase):
         If you encounter a UnitTestDisabledMethodError, examine the stack trace to find the appropriate place to mock.
         """
         blacklisted_methods = {
-            'filesystem side effects': [
-                'os.chmod', 'os.chown',  'os.fchmod', 'os.fchown', 'os.fsync', 'os.ftruncate', 'os.lchown', 'os.link',
-                'os.lockf', 'os.mkdir', 'os.mkfifo', 'os.mknod', 'os.open', 'os.openpty', 'os.makedirs', 'os.remove',
-                'os.rename', 'os.replace', 'os.rmdir', 'os.symlink', 'os.unlink',
-                'shutil.rmtree',
-                'app.util.fs.extract_tar',
-                'app.util.fs.compress_directory',
-                'app.util.fs.compress_directories',
-                'app.util.fs.create_dir',
-                'app.util.fs.write_file',
-            ],
+            'filesystem side effects': ['os.chmod',
+                                        'os.chown',
+                                        'os.fchmod',
+                                        'os.fchown',
+                                        'os.fsync',
+                                        'os.ftruncate',
+                                        'os.lchown',
+                                        'os.link',
+                                        'os.lockf',
+                                        'os.mkdir',
+                                        'os.mkfifo',
+                                        'os.mknod',
+                                        'os.open',
+                                        'os.openpty',
+                                        'os.makedirs',
+                                        'os.remove',
+                                        'os.rename',
+                                        'os.replace',
+                                        'os.rmdir',
+                                        'os.symlink',
+                                        'os.unlink',
+                                        'shutil.rmtree',
+                                        'app.util.fs.extract_tar',
+                                        'app.util.fs.compress_directory',
+                                        'app.util.fs.compress_directories',
+                                        'app.util.fs.create_dir',
+                                        'app.util.fs.write_file', ],
             'launching and interacting with child processes': [
-                'os.execv', 'os.execve', 'os.fork', 'os.forkpty', 'os.kill', 'os.killpg', 'os.pipe', 'os.system',
+                'os.execv',
+                'os.execve',
+                'os.fork',
+                'os.forkpty',
+                'os.kill',
+                'os.killpg',
+                'os.pipe',
+                'os.system',
                 'subprocess.call',
                 'subprocess.check_call',
                 'subprocess.check_output',
@@ -230,7 +267,9 @@ class BaseUnitTestCase(TestCase):
     def _blackist_target(self, patch_target, disabled_reason):
         message = '"{}" (or the method that calls it) must be explicitly patched in this unit test to avoid {}.'.format(
             patch_target, disabled_reason)
-        self.patch(patch_target, allow_repatch=True, side_effect=[UnitTestDisabledMethodError(message)])
+        self.patch(patch_target,
+                   allow_repatch=True,
+                   side_effect=[UnitTestDisabledMethodError(message)])
 
     def no_args_side_effect(self, actual_function):
         """
@@ -241,9 +280,12 @@ class BaseUnitTestCase(TestCase):
 
         :type actual_function: callable
         """
+
         @functools.wraps(actual_function)
         def argument_swallowing_wrapper_function(*args, **kwargs):
-            return actual_function()  # do not pass args and kwargs through to actual_function
+            return actual_function(
+            )  # do not pass args and kwargs through to actual_function
+
         return argument_swallowing_wrapper_function
 
 
@@ -261,5 +303,7 @@ class _GracefulShutdownTrigger(BaseException):
     with UnhandledExceptionHandler) during a test. This inherits from BaseException to prevent UnhandledExceptionHandler
     from raising a SystemExit.
     """
+
     def __init__(self):
-        super().__init__('This is a fake exception to trigger graceful app shutdown.')
+        super().__init__(
+            'This is a fake exception to trigger graceful app shutdown.')

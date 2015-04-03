@@ -15,13 +15,12 @@ class TestLocalShellClient(BaseUnitTestCase):
 
     def setUp(self):
         super().setUp()
-        self.mock_shutil = self.patch('app.util.shell.local_shell_client.shutil')
+        self.mock_shutil = self.patch(
+            'app.util.shell.local_shell_client.shutil')
         self.mock_Popen = self.patch('app.util.shell.local_shell_client.Popen')
 
-    @genty_dataset(
-        empty_response=(True, EmptyResponse()),
-        normal_response=(False, Response())
-    )
+    @genty_dataset(empty_response=(True, EmptyResponse()),
+                   normal_response=(False, Response()))
     def test_exec_command_returns_expected_response(self, async, expected):
         self.create_mock_popen()
         client = LocalShellClient(self._HOST, self._USER)
@@ -35,7 +34,8 @@ class TestLocalShellClient(BaseUnitTestCase):
         return mock_popen
 
     def test_copy_returns_expected_response(self):
-        expected = Response(raw_output=self._DESTINATION.encode(), returncode=0)
+        expected = Response(raw_output=self._DESTINATION.encode(),
+                            returncode=0)
         self.mock_shutil_copy_rval(self._DESTINATION)
         client = LocalShellClient(self._HOST, self._USER)
         res = client.copy(self._SOURCE, self._DESTINATION)

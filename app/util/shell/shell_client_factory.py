@@ -4,6 +4,7 @@ from app.util.shell.remote_shell_client import RemoteShellClient
 
 
 class ShellClientFactory(object):
+
     @classmethod
     def create(cls, host, user):
         if Network.are_hosts_same(host, 'localhost'):

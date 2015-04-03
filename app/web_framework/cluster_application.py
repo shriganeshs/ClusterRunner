@@ -17,4 +17,6 @@ class ClusterApplication(tornado.web.Application):
         all_route_nodes = [root_route] + root_route.descendants()
         # Tornado handlers take the form of a tuple(regex, handler_class, parameters).  The parameters start with
         # the common defaults provided and we append the RouteNode we are associating each handler with
-        return [(route.regex(), route.handler, dict(default_params, route_node=route)) for route in all_route_nodes]
+        return [(route.regex(), route.handler, dict(default_params,
+                                                    route_node=route))
+                for route in all_route_nodes]

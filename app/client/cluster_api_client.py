@@ -9,6 +9,7 @@ class ClusterAPIClient(object):
     """
     This is the base class for REST API wrappers around the master and slave services.
     """
+
     def __init__(self, base_api_url):
         """
         :param base_api_url: The base API url of the service (e.g., 'http://localhost:43000')
@@ -23,6 +24,7 @@ class ClusterMasterAPIClient(ClusterAPIClient):
     """
     This is a light wrapper client around the ClusterMaster REST API.
     """
+
     # TODO: Refactor BuildRunner to use this class.
     def post_new_build(self, request_params):
         """
@@ -34,12 +36,9 @@ class ClusterMasterAPIClient(ClusterAPIClient):
         :rtype: dict
         """
         build_url = self._api.url('build')
-        response = self._network.post_with_digest(
-            build_url,
-            request_params,
-            Secret.get(),
-            error_on_failure=True
-        )
+        response = self._network.post_with_digest(build_url, request_params,
+                                                  Secret.get(),
+                                                  error_on_failure=True)
         return response.json()
 
     def cancel_build(self, build_id):
@@ -51,12 +50,10 @@ class ClusterMasterAPIClient(ClusterAPIClient):
         :rtype: dict
         """
         build_url = self._api.url('build', build_id)
-        response = self._network.put_with_digest(
-            build_url,
-            {'status': 'canceled'},
-            Secret.get(),
-            error_on_failure=True
-        )
+        response = self._network.put_with_digest(build_url,
+                                                 {'status': 'canceled'
+            }, Secret.get(),
+                                                 error_on_failure=True)
         return response.json()
 
     def get_build_status(self, build_id):
@@ -72,11 +69,14 @@ class ClusterMasterAPIClient(ClusterAPIClient):
         response_data = self._network.get(build_status_url).json()
 
         if 'build' not in response_data or 'status' not in response_data['build']:
-            raise ClusterAPIValidationError('Status response does not contain a "build" object with a "status" value.'
-                                            'URL: {}, Content:{}'.format(build_status_url, response_data))
+            raise ClusterAPIValidationError(
+                'Status response does not contain a "build" object with a "status" value.'
+                'URL: {}, Content:{}'.format(build_status_url, response_data))
         return response_data
 
-    def block_until_build_finished(self, build_id, timeout=None, build_in_progress_callback=None):
+    def block_until_build_finished(self, build_id,
+                                   timeout=None,
+                                   build_in_progress_callback=None):
         """
         Poll the build status endpoint until the build is finished or until the timeout is reached.
 
@@ -88,10 +88,12 @@ class ClusterMasterAPIClient(ClusterAPIClient):
             yet finished. This would be useful, for example, for logging build progress.
         :type build_in_progress_callback: callable
         """
+
         def is_build_finished():
             response_data = self.get_build_status(build_id)
             build_data = response_data['build']
-            if build_data['status'] in (BuildStatus.FINISHED, BuildStatus.ERROR, BuildStatus.CANCELED):
+            if build_data['status'] in (
+                BuildStatus.FINISHED, BuildStatus.ERROR, BuildStatus.CANCELED):
                 return True
             if build_in_progress_callback:
                 build_in_progress_callback(build_data)
@@ -104,6 +106,7 @@ class ClusterSlaveAPIClient(ClusterAPIClient):
     """
     This is a light wrapper client around the ClusterSlave REST API.
     """
+
     # TODO: Move the API call logic from slave.py into this class.
     def block_until_idle(self, timeout=None):
         """
@@ -112,6 +115,7 @@ class ClusterSlaveAPIClient(ClusterAPIClient):
         :param timeout: The maximum number of seconds to wait until giving up, or None for no timeout
         :type timeout: int | None
         """
+
         def is_slave_idle():
             response_data = self.get_slave_status()
             return response_data['slave']['current_build_id'] is None
@@ -126,8 +130,9 @@ class ClusterSlaveAPIClient(ClusterAPIClient):
         response_data = self._network.get(slave_status_url).json()
 
         if 'slave' not in response_data:
-            raise ClusterAPIValidationError('Slave API response does not contain a "slave" object. URL: {}, Content:{}'
-                                            .format(slave_status_url, response_data))
+            raise ClusterAPIValidationError(
+                'Slave API response does not contain a "slave" object. URL: {}, Content:{}'.format(
+                    slave_status_url, response_data))
         return response_data
 
 

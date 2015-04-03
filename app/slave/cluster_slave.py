@@ -57,7 +57,10 @@ class ClusterSlave(object):
         Gets a dict representing this resource which can be returned in an API response.
         :rtype: dict [str, mixed]
         """
-        executors_representation = [executor.api_representation() for executor in self.executors_by_id.values()]
+        executors_representation = [
+            executor.api_representation()
+            for executor in self.executors_by_id.values()
+        ]
         return {
             'is_alive': self.is_alive,
             'master_url': self._master_url,
@@ -72,7 +75,8 @@ class ClusterSlave(object):
         """
         return 'Slave service is up. <Port: {}>'.format(self.port)
 
-    def setup_build(self, build_id, project_type_params, build_executor_start_index):
+    def setup_build(self, build_id, project_type_params,
+                    build_executor_start_index):
         """
         Usually called once per build to do build-specific setup. Will block any subjobs from executing until setup
         completes. The actual setup is performed on another thread and will unblock subjobs (via an Event) once it
@@ -86,28 +90,31 @@ class ClusterSlave(object):
         this build
         :type build_executor_start_index: int
         """
-        self._logger.info('Executing setup for build {} (type: {}).', build_id, project_type_params.get('type'))
+        self._logger.info('Executing setup for build {} (type: {}).', build_id,
+                          project_type_params.get('type'))
         self._current_build_id = build_id
-        self._build_teardown_coin = SingleUseCoin()  # protects against build_teardown being executed multiple times
+        self._build_teardown_coin = SingleUseCoin(
+        )  # protects against build_teardown being executed multiple times
 
         # create an project_type instance for build-level operations
         self._project_type = util.create_project_type(project_type_params)
 
         # verify all executors are idle
         if not self._idle_executors.full():
-            raise RuntimeError('Slave tried to setup build but not all executors are idle. ({}/{} executors idle.)'
-                               .format(self._idle_executors.qsize(), self._num_executors))
+            raise RuntimeError(
+                'Slave tried to setup build but not all executors are idle. ({}/{} executors idle.)'.format(
+                    self._idle_executors.qsize(), self._num_executors))
 
         # Collect all the executors to pass to project_type.fetch_project(). This will create a new project_type for
         # each executor (for subjob-level operations).
         executors = list(self._idle_executors.queue)
-        SafeThread(
-            target=self._async_setup_build,
-            name='Bld{}-Setup'.format(build_id),
-            args=(executors, project_type_params, build_executor_start_index)
-        ).start()
+        SafeThread(target=self._async_setup_build,
+                   name='Bld{}-Setup'.format(build_id),
+                   args=(executors, project_type_params,
+                         build_executor_start_index)).start()
 
-    def _async_setup_build(self, executors, project_type_params, build_executor_start_index):
+    def _async_setup_build(self, executors, project_type_params,
+                           build_executor_start_index):
         """
         Called from setup_build(). Do asynchronous setup for the build so that we can make the call to setup_build()
         non-blocking.
@@ -125,11 +132,15 @@ class ClusterSlave(object):
 
         except SetupFailureError as ex:
             self._logger.error(ex)
-            self._logger.info('Notifying master that build setup has failed for build {}.', self._current_build_id)
+            self._logger.info(
+                'Notifying master that build setup has failed for build {}.',
+                self._current_build_id)
             self._notify_master_of_state_change(SlaveState.SETUP_FAILED)
 
         else:
-            self._logger.info('Notifying master that build setup is complete for build {}.', self._current_build_id)
+            self._logger.info(
+                'Notifying master that build setup is complete for build {}.',
+                self._current_build_id)
             self._notify_master_of_state_change(SlaveState.SETUP_COMPLETED)
 
     def teardown_build(self, build_id=None):
@@ -141,15 +152,15 @@ class ClusterSlave(object):
         :type build_id: int | None
         """
         if self._current_build_id is None:
-            raise BadRequestError('Tried to teardown a build but no build is active on this slave.')
+            raise BadRequestError(
+                'Tried to teardown a build but no build is active on this slave.')
 
         if build_id is not None and build_id != self._current_build_id:
             raise BadRequestError('Tried to teardown build {}, '
-                                  'but slave is running build {}!'.format(build_id, self._current_build_id))
-        SafeThread(
-            target=self._async_teardown_build,
-            name='Bld{}-Teardwn'.format(build_id)
-        ).start()
+                                  'but slave is running build {}!'.format(
+                                      build_id, self._current_build_id))
+        SafeThread(target=self._async_teardown_build,
+                   name='Bld{}-Teardwn'.format(build_id)).start()
 
     def _async_teardown_build(self):
         """
@@ -177,22 +188,27 @@ class ClusterSlave(object):
             return  # There is no build to tear down! (Slave is idle.)
 
         if not self._build_teardown_coin.spend():
-            raise BuildTeardownError('Build teardown process was requested more than once for the same build.')
+            raise BuildTeardownError(
+                'Build teardown process was requested more than once for the same build.')
 
-        self._logger.info('Executing teardown for build {}.', self._current_build_id)
+        self._logger.info('Executing teardown for build {}.',
+                          self._current_build_id)
         # todo: Catch exceptions raised during teardown_build so we don't skip notifying master of idle/disconnect.
         self._project_type.teardown_build(timeout=timeout)
-        self._logger.info('Build teardown complete for build {}.', self._current_build_id)
+        self._logger.info('Build teardown complete for build {}.',
+                          self._current_build_id)
         self._current_build_id = None
         self._project_type = None
 
     def _send_master_idle_notification(self):
         if not self._is_master_responsive():
-            self._logger.notice('Could not post idle notification to master because master is unresponsive.')
+            self._logger.notice(
+                'Could not post idle notification to master because master is unresponsive.')
             return
 
         # Notify master that this slave is finished with teardown and ready for a new build.
-        self._logger.info('Notifying master that this slave is ready for new builds.')
+        self._logger.info(
+            'Notifying master that this slave is ready for new builds.')
         self._notify_master_of_state_change(SlaveState.IDLE)
 
     def _disconnect_from_master(self):
@@ -203,7 +219,8 @@ class ClusterSlave(object):
         self.is_alive = False
 
         if not self._is_master_responsive():
-            self._logger.notice('Could not post disconnect notification to master because master is unresponsive.')
+            self._logger.notice(
+                'Could not post disconnect notification to master because master is unresponsive.')
             return
 
         # Notify master that this slave is shutting down and should not receive new builds.
@@ -227,12 +244,16 @@ class ClusterSlave(object):
         }
         response = self._network.post(connect_url, data=data)
         self._slave_id = int(response.json().get('slave_id'))
-        self._logger.info('Slave {}:{} connected to master on {}.', self.host, self.port, self._master_url)
+        self._logger.info('Slave {}:{} connected to master on {}.', self.host,
+                          self.port, self._master_url)
 
         # We disconnect from the master before build_teardown so that the master stops sending subjobs. (Teardown
         # callbacks are executed in the reverse order that they're added, so we add the build_teardown callback first.)
-        UnhandledExceptionHandler.singleton().add_teardown_callback(self._do_build_teardown_and_reset, timeout=30)
-        UnhandledExceptionHandler.singleton().add_teardown_callback(self._disconnect_from_master)
+        UnhandledExceptionHandler.singleton().add_teardown_callback(
+            self._do_build_teardown_and_reset,
+            timeout=30)
+        UnhandledExceptionHandler.singleton().add_teardown_callback(
+            self._disconnect_from_master)
 
     def _is_master_responsive(self):
         """
@@ -252,7 +273,8 @@ class ClusterSlave(object):
 
         return is_responsive
 
-    def start_working_on_subjob(self, build_id, subjob_id, subjob_artifact_dir, atomic_commands):
+    def start_working_on_subjob(self, build_id, subjob_id, subjob_artifact_dir,
+                                atomic_commands):
         """
         Begin working on a subjob with the given build id and subjob id. This just starts the subjob execution
         asynchronously on a separate thread.
@@ -265,24 +287,27 @@ class ClusterSlave(object):
         :rtype: dict[str, int]
         """
         if build_id != self._current_build_id:
-            raise BadRequestError('Attempted to start subjob {} for build {}, '
-                                  'but current build id is {}.'.format(subjob_id, build_id, self._current_build_id))
+            raise BadRequestError(
+                'Attempted to start subjob {} for build {}, '
+                'but current build id is {}.'.format(subjob_id, build_id,
+                                                     self._current_build_id))
 
         # get idle executor from queue to claim it as in-use (or block until one is available)
         executor = self._idle_executors.get()
 
         # Start a thread to execute the job (after waiting for setup to complete)
-        SafeThread(
-            target=self._execute_subjob,
-            args=(build_id, subjob_id, executor, subjob_artifact_dir, atomic_commands),
-            name='Bld{}-Sub{}'.format(build_id, subjob_id),
-        ).start()
+        SafeThread(target=self._execute_subjob,
+                   args=(build_id, subjob_id, executor, subjob_artifact_dir,
+                         atomic_commands),
+                   name='Bld{}-Sub{}'.format(build_id, subjob_id), ).start()
 
-        self._logger.info('Slave ({}:{}) has received subjob. (Build {}, Subjob {})', self.host, self.port, build_id,
-                          subjob_id)
+        self._logger.info(
+            'Slave ({}:{}) has received subjob. (Build {}, Subjob {})',
+            self.host, self.port, build_id, subjob_id)
         return {'executor_id': executor.id}
 
-    def _execute_subjob(self, build_id, subjob_id, executor, subjob_artifact_dir, atomic_commands):
+    def _execute_subjob(self, build_id, subjob_id, executor,
+                        subjob_artifact_dir, atomic_commands):
         """
         This is the method for executing a subjob asynchronously. This performs the work required by executing the
         specified command, then does a post back to the master results endpoint to signal that the work is done.
@@ -293,24 +318,40 @@ class ClusterSlave(object):
         :type subjob_artifact_dir: str
         :type atomic_commands: list[str]
         """
-        subjob_event_data = {'build_id': build_id, 'subjob_id': subjob_id, 'executor_id': executor.id}
+        subjob_event_data = {
+            'build_id': build_id,
+            'subjob_id': subjob_id,
+            'executor_id': executor.id
+        }
 
-        analytics.record_event(analytics.SUBJOB_EXECUTION_START, **subjob_event_data)
-        results_file = executor.execute_subjob(build_id, subjob_id, subjob_artifact_dir, atomic_commands,
+        analytics.record_event(analytics.SUBJOB_EXECUTION_START, **
+                               subjob_event_data)
+        results_file = executor.execute_subjob(build_id, subjob_id,
+                                               subjob_artifact_dir,
+                                               atomic_commands,
                                                self._base_executor_index)
-        analytics.record_event(analytics.SUBJOB_EXECUTION_FINISH, **subjob_event_data)
+        analytics.record_event(analytics.SUBJOB_EXECUTION_FINISH, **
+                               subjob_event_data)
 
-        results_url = self._master_api.url('build', build_id, 'subjob', subjob_id, 'result')
+        results_url = self._master_api.url('build', build_id, 'subjob',
+                                           subjob_id, 'result')
         data = {
             'slave': '{}:{}'.format(self.host, self.port),
             'metric_data': {'executor_id': executor.id},
         }
-        files = {'file': ('payload', open(results_file, 'rb'), 'application/x-compressed')}
+        files = {
+            'file': ('payload', open(results_file, 'rb'),
+                     'application/x-compressed')
+        }
 
         self._idle_executors.put(executor)  # work is done; mark executor as idle
-        self._network.post(results_url, data=data, files=files)  # todo: check return code
+        self._network.post(results_url,
+                           data=data,
+                           files=files)  # todo: check return code
 
-        self._logger.info('Build {}, Subjob {} completed and sent results to master.', build_id, subjob_id)
+        self._logger.info(
+            'Build {}, Subjob {} completed and sent results to master.',
+            build_id, subjob_id)
 
     def _notify_master_of_state_change(self, new_state):
         """
@@ -320,8 +361,11 @@ class ClusterSlave(object):
         :type new_state: SlaveState
         """
         state_url = self._master_api.url('slave', self._slave_id)
-        self._network.put_with_digest(state_url, request_params={'slave': {'state': new_state}},
-                                      secret=Secret.get(), error_on_failure=True)
+        self._network.put_with_digest(
+            state_url,
+            request_params={'slave': {'state': new_state}},
+            secret=Secret.get(),
+            error_on_failure=True)
 
     def kill(self):
         # TODO(dtran): Kill the threads and this server more gracefully

@@ -7,7 +7,6 @@ from app.util.secret import Secret
 
 @genty
 class TestSecret(BaseUnitTestCase):
-
     def test_get_secret_should_return_set_secret(self):
         secret = 'secret1234'
         Secret.set(secret)
@@ -34,7 +33,8 @@ class TestSecret(BaseUnitTestCase):
         secret = 'secrettoken'
         message = 'message blah blah horse battery staple'
         Secret.set(secret)
-        digest_received = Secret._get_hex_digest('not the original message', secret)
+        digest_received = Secret._get_hex_digest('not the original message',
+                                                 secret)
 
         self.assertFalse(Secret.digest_is_valid(digest_received, message))
 

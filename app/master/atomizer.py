@@ -7,6 +7,7 @@ class Atomizer(object):
     into a list of atoms. The actual computed atoms are just environment variable export shell commands that are then
     prepended to whatever commands were specified in the "commands" section of the project config.
     """
+
     def __init__(self, atomizer_dicts):
         """
         :param atomizer_dicts: A list of dicts mapping atomizer env var names to atomizer commands
@@ -28,15 +29,20 @@ class Atomizer(object):
         atoms_list = []
         for atomizer_dict in self._atomizer_dicts:
             for atomizer_var_name, atomizer_command in atomizer_dict.items():
-                atomizer_output, exit_code = project_type.execute_command_in_project(atomizer_command)
+                atomizer_output, exit_code = project_type.execute_command_in_project(
+                    atomizer_command)
                 if exit_code != 0:
-                    self._logger.error('Atomizer command "{}" for variable "{}" failed with exit code: {} and output:'
-                                       '\n{}', atomizer_command, atomizer_var_name, exit_code, atomizer_output)
+                    self._logger.error(
+                        'Atomizer command "{}" for variable "{}" failed with exit code: {} and output:'
+                        '\n{}', atomizer_command, atomizer_var_name, exit_code,
+                        atomizer_output)
                     raise AtomizerError('Atomizer command failed!')
 
                 # Convert atomizer command output into environment variable export commands.
-                new_atoms = ['export {}="{}";'.format(atomizer_var_name, atom_value)
-                             for atom_value in atomizer_output.strip().splitlines()]
+                new_atoms = [
+                    'export {}="{}";'.format(atomizer_var_name, atom_value)
+                    for atom_value in atomizer_output.strip().splitlines()
+                ]
                 atoms_list.extend(new_atoms)
 
         return atoms_list

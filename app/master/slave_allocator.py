@@ -16,7 +16,9 @@ class SlaveAllocator(object):
         self._build_request_handler = build_request_handler
         self._idle_slaves = OrderedSetQueue()
         self._allocation_thread = SafeThread(
-            target=self._slave_allocation_loop, name='SlaveAllocationLoop', daemon=True)
+            target=self._slave_allocation_loop,
+            name='SlaveAllocationLoop',
+            daemon=True)
 
     def start(self):
         """
@@ -24,7 +26,8 @@ class SlaveAllocator(object):
         and allocate them slaves.
         """
         if self._allocation_thread.is_alive():
-            raise RuntimeError('Error: slave allocation loop was asked to start when its already running.')
+            raise RuntimeError(
+                'Error: slave allocation loop was asked to start when its already running.')
         self._allocation_thread.start()
 
     def _slave_allocation_loop(self):
@@ -34,7 +37,8 @@ class SlaveAllocator(object):
         """
         while True:
             # This is a blocking call that will block until there is a prepared build.
-            build_waiting_for_slave = self._build_request_handler.next_prepared_build()
+            build_waiting_for_slave = self._build_request_handler.next_prepared_build(
+            )
 
             while build_waiting_for_slave.needs_more_slaves():
                 claimed_slave = self._idle_slaves.get()
@@ -48,12 +52,14 @@ class SlaveAllocator(object):
                     # Potential race condition here!  If the build completes after the if statement is checked,
                     # a slave will be allocated needlessly (and run slave.setup(), which can be significant work).
                     self._logger.info('Allocating slave {} to build {}.',
-                                      claimed_slave.url, build_waiting_for_slave.build_id())
+                                      claimed_slave.url,
+                                      build_waiting_for_slave.build_id())
                     build_waiting_for_slave.allocate_slave(claimed_slave)
                 else:
                     self.add_idle_slave(claimed_slave)
 
-            self._logger.info('Done allocating slaves for build {}.', build_waiting_for_slave.build_id())
+            self._logger.info('Done allocating slaves for build {}.',
+                              build_waiting_for_slave.build_id())
 
     def add_idle_slave(self, slave):
         """

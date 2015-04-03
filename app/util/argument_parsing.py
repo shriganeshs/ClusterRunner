@@ -9,6 +9,7 @@ class ClusterRunnerArgumentParser(argparse.ArgumentParser):
     causes the help text to display these as two separate sections, making it much clearer which are optional and which
     are required. (Default is to list all but postitional arguments as "optional" even if they're required.)
     """
+
     def __init__(self, *args, **kwargs):
         # we will manually add the "help" argument so that we can explicitly put it in the "optional" argument group
         should_add_help = kwargs.pop('add_help', True)
@@ -17,7 +18,10 @@ class ClusterRunnerArgumentParser(argparse.ArgumentParser):
         self._required_arg_group = self.add_argument_group('required arguments')
         self._optional_arg_group = self.add_argument_group('optional arguments')
         if should_add_help:
-            self._optional_arg_group.add_argument('-h', '--help', help='show this help message and exit', action='help')
+            self._optional_arg_group.add_argument(
+                '-h', '--help',
+                help='show this help message and exit',
+                action='help')
 
     def add_argument(self, *args, **kwargs):
         """
@@ -77,7 +81,8 @@ class ClusterRunnerHelpFormatter(argparse.HelpFormatter):
             if action.nargs != 0:
                 default = self._get_default_metavar_for_optional(action)
                 metavar_string = self._format_args(action, default)
-                action_invocation_string = '{} {}'.format(action_invocation_string, metavar_string)
+                action_invocation_string = '{} {}'.format(
+                    action_invocation_string, metavar_string)
             return action_invocation_string
 
         return super()._format_action_invocation(action)

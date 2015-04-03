@@ -8,10 +8,10 @@ from test.framework.base_unit_test_case import BaseUnitTestCase
 
 @genty
 class TestShellClientFactory(BaseUnitTestCase):
-    @genty_dataset(
-        local_shell=(LocalShellClient, 'localhost'),
-        remote_shell=(RemoteShellClient, 'mordor')
-    )
-    def test_create_returns_instance_of_expected(self, expected_class_type, host_name):
+
+    @genty_dataset(local_shell=(LocalShellClient, 'localhost'),
+                   remote_shell=(RemoteShellClient, 'mordor'))
+    def test_create_returns_instance_of_expected(self, expected_class_type,
+                                                 host_name):
         shell_client = ShellClientFactory.create(host=host_name, user='sauron')
         self.assertEqual(expected_class_type, type(shell_client))

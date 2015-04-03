@@ -11,20 +11,20 @@ import threading
 from app.util import autoversioning, fs
 from app.util.conf.configuration import Configuration
 
-
 # This custom format string takes care of setting field widths to make logs more aligned and readable.
 _LOG_FORMAT_STRING = (
-    '[{record.time!s:.23}] '             # 23 chars of date and time (omits last 3 digits of microseconds)
-    '{record.level_name:7} '             # log level - min field width = 7
-    '{record.thread_name:15.15} '        # thread name - min and max field width = 15
-    '{record.channel:15.15} '            # module name - min and max field width = 15
-    '{record.message}'
-)
+    '[{record.time!s:.23}] '
+    # 23 chars of date and time (omits last 3 digits of microseconds)
+    '{record.level_name:7} '  # log level - min field width = 7
+    '{record.thread_name:15.15} '  # thread name - min and max field width = 15
+    '{record.channel:15.15} '  # module name - min and max field width = 15
+    '{record.message}')
 
 # When logging to the console, just print the message
 _SIMPLIFIED_LOG_FORMAT_STRING = '{record.message}'
 
-_LOG_COLORS = defaultdict(lambda: ('grey', []), {  # default to grey
+_LOG_COLORS = defaultdict(lambda: ('grey', []), {
+    # default to grey
     logbook.CRITICAL: ('magenta', ['bold']),
     logbook.ERROR: ('red', ['bold']),
     logbook.WARNING: ('yellow', ['bold']),
@@ -59,11 +59,15 @@ def get_logger(logger_name=None):
     :return: The logger instance
     :rtype: logbook.Logger
     """
-    name_without_package = logger_name.rsplit('.', 1)[-1]  # e.g., converts "project_type.docker" to "docker"
+    name_without_package = logger_name.rsplit('.', 1)[
+        -1
+    ]  # e.g., converts "project_type.docker" to "docker"
     return Logger(name_without_package)
 
 
-def configure_logging(log_level=None, log_file=None, simplified_console_logs=False):
+def configure_logging(log_level=None,
+                      log_file=None,
+                      simplified_console_logs=False):
     """
     This should be called once as early as possible in app startup to configure logging handlers and formatting.
 
@@ -78,7 +82,9 @@ def configure_logging(log_level=None, log_file=None, simplified_console_logs=Fal
     logbook.set_datetime_format('local')
 
     # Redirect standard lib logging to capture third-party logs in our log files (e.g., tornado, requests)
-    logging.root.setLevel(logging.WARNING)  # don't include DEBUG/INFO/NOTICE-level logs from third parties
+    logging.root.setLevel(
+        logging.WARNING
+    )  # don't include DEBUG/INFO/NOTICE-level logs from third parties
     logbook.compat.redirect_logging(set_root_logger_level=False)
 
     # Add a NullHandler to suppress all log messages lower than our desired log_level. (Otherwise they go to stderr.)
@@ -90,13 +96,11 @@ def configure_logging(log_level=None, log_file=None, simplified_console_logs=Fal
         format_string, log_colors = _SIMPLIFIED_LOG_FORMAT_STRING, _SIMPLIFIED_LOG_COLORS
 
     # handler for stdout
-    log_handler = _ColorizingStreamHandler(
-        stream=sys.stdout,
-        level=log_level,
-        format_string=format_string,
-        log_colors=log_colors,
-        bubble=True,
-    )
+    log_handler = _ColorizingStreamHandler(stream=sys.stdout,
+                                           level=log_level,
+                                           format_string=format_string,
+                                           log_colors=log_colors,
+                                           bubble=True, )
     log_handler.push_application()
 
     # handler for log file
@@ -111,8 +115,7 @@ def configure_logging(log_level=None, log_file=None, simplified_console_logs=Fal
             log_colors=_LOG_COLORS,
             bubble=True,
             max_size=Configuration['max_log_file_size'],
-            backup_count=Configuration['max_log_file_backups'],
-        )
+            backup_count=Configuration['max_log_file_backups'], )
         event_handler.push_application()
         if previous_log_file_exists:
             # Force application to create a new log file on startup.
@@ -129,11 +132,9 @@ def application_summary(logfile_count):
     :type logfile_count: int
     """
     separator = '*' * 50
-    summary_lines = [
-        ' ClusterRunner',
-        '  * Version: {}'.format(autoversioning.get_version()),
-        '  * PID:     {}'.format(os.getpid()),
-    ]
+    summary_lines = [' ClusterRunner',
+                     '  * Version: {}'.format(autoversioning.get_version()),
+                     '  * PID:     {}'.format(os.getpid()), ]
     if logfile_count > 1:
         summary_lines.append('  * Logfile count: {}'.format(logfile_count))
 
@@ -144,6 +145,7 @@ class _ColorizingStreamHandler(StreamHandler):
     """
     This is a StreamHandler that colorizes its log messages.
     """
+
     def __init__(self, log_colors, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._log_colors = log_colors
@@ -154,7 +156,8 @@ class _ColorizingStreamHandler(StreamHandler):
         return colored(output, color, attrs=attrs) if color else output
 
 
-class _ColorizingRotatingFileHandler(_ColorizingStreamHandler, RotatingFileHandler):
+class _ColorizingRotatingFileHandler(_ColorizingStreamHandler,
+                                     RotatingFileHandler):
     """
     This is a RotatingFileHandler that colorizes its log messages. It also adds an application summary log message at
     the beginning of each log file.

@@ -6,7 +6,6 @@ import sys
 
 from app.util import autoversioning
 
-
 buildOptions = {
     'excludes': [],
     'append_script_to_exe': False,
@@ -15,16 +14,16 @@ buildOptions = {
     'copy_dependent_files': True,
     'create_shared_zip': True,
     'include_in_shared_zip': True,
-    'include_files': [('conf/default_clusterrunner.conf', 'conf/default_clusterrunner.conf')],
+    'include_files': [
+        ('conf/default_clusterrunner.conf', 'conf/default_clusterrunner.conf')
+    ],
     'optimize': 2,
 }
 
 base = 'Console'
 
 executable_name = 'clusterrunner'
-executables = [
-    Executable('main.py', base=base, targetName=executable_name)
-]
+executables = [Executable('main.py', base=base, targetName=executable_name)]
 
 if sys.platform.startswith('linux'):
     # Fixes compatibility between rhel and ubuntu
@@ -52,7 +51,8 @@ if sys.platform == 'darwin':
     clusterrunner_path = join(dirname(__file__), 'dist', executable_name)
 
     # Get the Python reference in clusterrunner
-    otool_proc = subprocess.Popen(('otool', '-L', clusterrunner_path), stdout=subprocess.PIPE)
+    otool_proc = subprocess.Popen(('otool', '-L', clusterrunner_path),
+                                  stdout=subprocess.PIPE)
     clusterrunner_libs = otool_proc.stdout.readlines()
     for lib in clusterrunner_libs[1:]:
         lib = lib.decode().strip()
@@ -63,6 +63,8 @@ if sys.platform == 'darwin':
     # Replace the absolute path reference in clusterrunner with a relative path
     if abs_python_path:
         rel_python_path = '@executable_path/Python'
-        print('Replacing reference: "{}" -> "{}"'.format(abs_python_path, rel_python_path))
-        subproc_args = ['install_name_tool', '-change', abs_python_path, rel_python_path, clusterrunner_path]
+        print('Replacing reference: "{}" -> "{}"'.format(abs_python_path,
+                                                         rel_python_path))
+        subproc_args = ['install_name_tool', '-change', abs_python_path,
+                        rel_python_path, clusterrunner_path]
         subprocess.Popen(subproc_args)

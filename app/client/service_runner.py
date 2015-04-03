@@ -22,7 +22,9 @@ class ServiceRunner(object):
 
     def __init__(self, master_url, main_executable=None):
         self._master_url = master_url
-        self._main_executable = main_executable or Configuration['main_executable_path']
+        self._main_executable = main_executable or Configuration[
+            'main_executable_path'
+        ]
         self._logger = get_logger(__name__)
 
     def run_master(self):
@@ -33,9 +35,8 @@ class ServiceRunner(object):
         self._logger.info('Running master on {}'.format(self._master_url))
         if self.is_master_up():
             return
-        cmd = '{} master --port {} &'.format(
-            self._main_executable,
-            self._port(self._master_url))
+        cmd = '{} master --port {} &'.format(self._main_executable,
+                                             self._port(self._master_url))
 
         self._run_service(cmd, self._master_url)
 
@@ -55,9 +56,8 @@ class ServiceRunner(object):
         :return:
         """
         self._logger.info('Running slave')
-        cmd = '{} slave --master-url {} '.format(
-            self._main_executable,
-            self._master_url)
+        cmd = '{} slave --master-url {} '.format(self._main_executable,
+                                                 self._master_url)
         if port is not None:
             cmd += '--port {} '.format(str(port))
         cmd += '&'
@@ -84,7 +84,8 @@ class ServiceRunner(object):
             return False
 
         if not poll.wait_for(is_queue_empty, timeout, 0.5):
-            raise Exception('Master service did not become idle before timeout.')
+            raise Exception(
+                'Master service did not become idle before timeout.')
 
     def kill(self):
         self._run_service('{} stop'.format(self._main_executable))
@@ -100,7 +101,8 @@ class ServiceRunner(object):
             return
         Popen(cmd, stdout=DEVNULL, shell=True)
         if service_url is not None and not self.is_up(service_url, timeout=10):
-            raise ServiceRunError("Failed to run service on {}.".format(service_url))
+            raise ServiceRunError(
+                "Failed to run service on {}.".format(service_url))
 
     def is_master_up(self):
         """
@@ -120,7 +122,8 @@ class ServiceRunner(object):
         timeout_time = time.time() + timeout
         while True:
             try:
-                resp = network.get('http://{}'.format(service_url), timeout=timeout)
+                resp = network.get('http://{}'.format(service_url),
+                                   timeout=timeout)
                 if resp and resp.ok:
                     return True
             except (requests.RequestException, ConnectionError):

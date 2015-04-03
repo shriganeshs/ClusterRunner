@@ -58,7 +58,9 @@ def write_file(file_contents, file_path):
         open_kwargs = {}
         file_mode = 'wb'
     else:
-        open_kwargs = {'encoding': 'utf-8'}  # This is necessary since UTF-8 is not the default on all systems.
+        open_kwargs = {
+            'encoding': 'utf-8'
+        }  # This is necessary since UTF-8 is not the default on all systems.
         file_mode = 'w'
 
     with open(file_path, file_mode, **open_kwargs) as f:
@@ -78,7 +80,8 @@ def extract_tar(archive_file, target_dir=None, delete=False):
     :rtype:
     """
     if not target_dir:
-        target_dir, _ = os.path.split(archive_file)  # default to same directory as tar file
+        target_dir, _ = os.path.split(archive_file
+                                     )  # default to same directory as tar file
 
     try:
         with tarfile.open(archive_file, 'r:gz') as f:
@@ -90,10 +93,7 @@ def extract_tar(archive_file, target_dir=None, delete=False):
 
 # TODO(dtran): Remove this function once its uses are deprecated.
 def compress_directory(target_dir, archive_filename):
-    tar_file = os.path.join(
-        target_dir,
-        archive_filename
-    )
+    tar_file = os.path.join(target_dir, archive_filename)
     with tarfile.open(tar_file, 'w:gz') as tar:
         tar.add(target_dir, arcname=".")
 

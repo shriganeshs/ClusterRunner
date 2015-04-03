@@ -5,6 +5,7 @@ class RouteNode(object):
     """
     A tree data structure for representing the parts of a url path, for routing.
     """
+
     def __init__(self, regex_part, handler, label=None):
         """
         :param regex_part: To generate the regex the web framework will use to match this route, we combine a set of
@@ -26,15 +27,20 @@ class RouteNode(object):
         The route's regex, used to register this route with the web framework
         :rtype: str
         """
-        ancestor_regex_parts = [ancestor.regex_part.rstrip('/') for ancestor in list(reversed(self.ancestors()))]
-        return r'/'.join(ancestor_regex_parts + [self.regex_part]).rstrip('/') + '/?'
+        ancestor_regex_parts = [
+            ancestor.regex_part.rstrip('/')
+            for ancestor in list(reversed(self.ancestors()))
+        ]
+        return r'/'.join(ancestor_regex_parts +
+                         [self.regex_part]).rstrip('/') + '/?'
 
     def route_template(self):
         """
         The generic form of this route, for display in the API 'child routes'
         :rtype: str
         """
-        ancestor_names = [ancestor.name().rstrip('/') for ancestor in list(reversed(self.ancestors()))]
+        ancestor_names = [ancestor.name().rstrip('/')
+                          for ancestor in list(reversed(self.ancestors()))]
         return '/'.join(ancestor_names + [self.name()])
 
     def name(self):

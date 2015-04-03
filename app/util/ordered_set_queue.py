@@ -7,6 +7,7 @@ class OrderedSetQueue(Queue):
     A queue based on ordered set. This behaves just like a normal queue but does not allow the same item to be in the
     queue more than once.
     """
+
     def _init(self, maxsize):
         self.queue = OrderedSet()
 
@@ -25,8 +26,8 @@ class OrderedSet(collections.MutableSet):
 
     def __init__(self, iterable=None):
         self.end = end = []
-        end += [None, end, end]         # sentinel node for doubly linked list
-        self.map = {}                   # key --> [key, prev, next]
+        end += [None, end, end]  # sentinel node for doubly linked list
+        self.map = {}  # key --> [key, prev, next]
         if iterable is not None:
             self |= iterable
 
@@ -71,7 +72,7 @@ class OrderedSet(collections.MutableSet):
 
     def __repr__(self):
         if not self:
-            return '%s()' % (self.__class__.__name__,)
+            return '%s()' % (self.__class__.__name__, )
         return '%s(%r)' % (self.__class__.__name__, list(self))
 
     def __eq__(self, other):

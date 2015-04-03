@@ -10,6 +10,7 @@ class DockerContainer(object):
     """
     Represents a docker container. Supports starting an interactive session.
     """
+
     def __init__(self, image, user=None, host=None, mounted_volumes=None):
         """
         :type image: str
@@ -30,7 +31,8 @@ class DockerContainer(object):
 
         :rtype: bool
         """
-        pull_process = subprocess.Popen(['docker', 'pull', self._image], stdout=subprocess.DEVNULL)
+        pull_process = subprocess.Popen(['docker', 'pull', self._image],
+                                        stdout=subprocess.DEVNULL)
         pull_process.communicate()
         return pull_process.returncode == 0
 
@@ -62,7 +64,9 @@ class DockerContainer(object):
 
     # todo: Defaulting the command to '/bin/bash' is probably not the most universal solution. We need to be able to
     # todo:   get a shell into the container, but may not want to override the CMD specified in a dockerfile.
-    def _run_interactive(self, command_to_execute='/bin/bash', additional_volumes=None):
+    def _run_interactive(self,
+                         command_to_execute='/bin/bash',
+                         additional_volumes=None):
         """
         Do a "docker run" in interactive mode. This leaves the docker container running and waiting for commands. This
         method returns the Popen instance which can be used to send commands into the docker process.
@@ -72,9 +76,15 @@ class DockerContainer(object):
         :return: The running "docker run -i" process
         :rtype: Popen
         """
-        return self._execute_docker_run(command_to_execute, additional_volumes=additional_volumes, interactive=True)
+        return self._execute_docker_run(command_to_execute,
+                                        additional_volumes=additional_volumes,
+                                        interactive=True)
 
-    def _execute_docker_run(self, command_to_execute='', additional_volumes=None, interactive=False, remove=True):
+    def _execute_docker_run(self,
+                            command_to_execute='',
+                            additional_volumes=None,
+                            interactive=False,
+                            remove=True):
         """
         Build a "docker run" command for this container and execute it in a subprocess.
 
@@ -84,7 +94,8 @@ class DockerContainer(object):
         :rtype: Popen
         """
         docker_run_command = 'docker run'
-        docker_arguments = [  # a list of tuples of the format (should_include_arg, arg_string)
+        docker_arguments = [
+            # a list of tuples of the format (should_include_arg, arg_string)
             (self._host, ' -h "{}"'.format(self._host)),
             (self._user, ' -u "{}"'.format(self._user)),
             (interactive, ' -i'),
@@ -97,11 +108,17 @@ class DockerContainer(object):
         volumes_to_mount = self._mounted_volumes.copy()
         volumes_to_mount.update(additional_volumes or {})
         for host_directory, container_directory in volumes_to_mount.items():
-            docker_run_command += ' -v {}:{}'.format(host_directory, container_directory)
+            docker_run_command += ' -v {}:{}'.format(host_directory,
+                                                     container_directory)
 
         docker_run_command += ' {} {}'.format(self._image, command_to_execute)
-        return subprocess.Popen(docker_run_command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT, universal_newlines=True, bufsize=0)
+        return subprocess.Popen(docker_run_command,
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT,
+                                universal_newlines=True,
+                                bufsize=0)
 
     def start_session(self):
         """
@@ -109,12 +126,13 @@ class DockerContainer(object):
         """
         if self._active_session:
             self.end_session()
-            raise RuntimeError('start_session() was called with an active session still running.')
+            raise RuntimeError(
+                'start_session() was called with an active session still running.')
 
-        session_dir = TemporaryDirectory()  # a temp directory to hold exit codes and output for this session
+        session_dir = TemporaryDirectory(
+        )  # a temp directory to hold exit codes and output for this session
         docker_process = self._run_interactive(
-            additional_volumes={session_dir.name: session_dir.name}
-        )
+            additional_volumes={session_dir.name: session_dir.name})
         self._active_session = _DockerSession(session_dir, docker_process)
         self._active_session.block_until_ready()
 
@@ -123,7 +141,8 @@ class DockerContainer(object):
         End the interactive session for this container started by start_session().
         """
         if not self._active_session:
-            raise RuntimeError('end_session() was called without a session to end.')
+            raise RuntimeError(
+                'end_session() was called without a session to end.')
 
         self._active_session.end()
         self._active_session = None
@@ -138,7 +157,8 @@ class _DockerSession(object):
         self._session_dir = session_dir
         self._docker_process = docker_process
         self._logger = log.get_logger(__name__)
-        self._logger.debug('Started docker session, pid: {}', self._docker_process.pid)
+        self._logger.debug('Started docker session, pid: {}',
+                           self._docker_process.pid)
 
     def execute(self, command):
         """
@@ -153,10 +173,12 @@ class _DockerSession(object):
         file_suffix = str(time.time())
         output_file_path = self._tempfile('output' + file_suffix)
         exit_code_file_path = self._tempfile('exit_code' + file_suffix)
-        command = ('({}) > {} '      # run command in subshell and redirect output to output file
-                   '2>&1\n'          # redirect stderr of subshell to stdout (same output file)
+        command = ('({}) > {} '
+                   # run command in subshell and redirect output to output file
+                   '2>&1\n'
+                   # redirect stderr of subshell to stdout (same output file)
                    'echo $? > {}\n'  # save exit_code to exit code file
-                   ).format(command, output_file_path, exit_code_file_path)
+                  ).format(command, output_file_path, exit_code_file_path)
 
         # send the command to the docker container and wait for command to finish
         self._docker_process.stdin.write(command)
@@ -194,9 +216,14 @@ class _DockerSession(object):
         :rtype: int
         """
         # tail the exit code file -- this allows us to block until the file contains an exit code
-        tail_command = 'tail -n 1 -F {}'.format(exit_code_file)  # include "-n 1" in case the file already has a line
-        tail_process = subprocess.Popen(tail_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                        universal_newlines=True, bufsize=0)
+        tail_command = 'tail -n 1 -F {}'.format(
+            exit_code_file)  # include "-n 1" in case the file already has a line
+        tail_process = subprocess.Popen(tail_command,
+                                        shell=True,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT,
+                                        universal_newlines=True,
+                                        bufsize=0)
 
         # block until we get a line from this file -- this will be the exit code of the executed docker command
         exit_code = tail_process.stdout.readline()  # blocks until a line is read
@@ -221,7 +248,8 @@ class _DockerSession(object):
         """
         file_path = os.path.join(self._session_dir.name, name)
         mode = 'w+' if overwrite_existing else 'a+'
-        open(file_path, mode).close()  # just create the file -- we just need it to exist, so don't leave it open.
+        open(file_path, mode).close(
+        )  # just create the file -- we just need it to exist, so don't leave it open.
         return file_path
 
     def __del__(self):

@@ -10,7 +10,6 @@ from app.util import fs, log
 from app.util.conf.configuration import Configuration
 from app.util.counter import Counter
 
-
 BUILD_REQUEST_QUEUED = 'BUILD_REQUEST_QUEUED'
 BUILD_PREPARE_START = 'BUILD_PREPARE_START'
 BUILD_PREPARE_FINISH = 'BUILD_PREPARE_FINISH'
@@ -53,16 +52,15 @@ def initialize(eventlog_file=None):
         event_handler = RotatingFileHandler(
             filename=eventlog_file,
             max_size=Configuration['max_eventlog_file_size'],
-            backup_count=Configuration['max_eventlog_file_backups'],
-        )
+            backup_count=Configuration['max_eventlog_file_backups'], )
         if previous_log_file_exists:
-            event_handler.perform_rollover()  # force starting a new eventlog file on application startup
+            event_handler.perform_rollover(
+            )  # force starting a new eventlog file on application startup
 
     event_handler.format_string = '{record.message}'  # only output raw log message -- no timestamp or log level
-    handler = TaggingHandler(
-        {'event': event_handler},  # enable logging to the event_handler with the event() method
-        bubble=True,
-    )
+    handler = TaggingHandler({'event': event_handler
+        },  # enable logging to the event_handler with the event() method
+                             bubble=True, )
     handler.push_application()
 
     _analytics_logger = TaggingLogger('analytics', ['event'])
@@ -85,7 +83,9 @@ def record_event(tag, log_msg=None, **event_data):
         event_data['__id__'] = _event_id_generator.increment()
         event_data['__tag__'] = tag
         event_data['__timestamp__'] = time.time()
-        _analytics_logger.event(json.dumps(event_data, sort_keys=True))  # pylint: disable=no-member
+        _analytics_logger.event(json.dumps(event_data,
+                                           sort_keys=True)
+                               )  # pylint: disable=no-member
         # todo(joey): cache most recent N events so get_events() doesn't always have to load file
 
     if log_msg:
@@ -110,7 +110,8 @@ def get_events(since_timestamp=None, since_id=None):
         return None
 
     if None not in (since_timestamp, since_id):
-        raise ValueError('Invalid arguments: only one of "since_timestamp" and "since_id" can be specified.')
+        raise ValueError(
+            'Invalid arguments: only one of "since_timestamp" and "since_id" can be specified.')
 
     # set defaults here instead of in function def so we don't have to worry about defaults in the web layer.
     since_timestamp = float(since_timestamp) if since_timestamp else 0.0
@@ -124,7 +125,9 @@ def get_events(since_timestamp=None, since_id=None):
     returned_events = []
     for log_line in reversed_log_lines:
         try:
-            event = json.loads(log_line, object_pairs_hook=collections.OrderedDict)  # OrderedDict keeps keys sorted
+            event = json.loads(log_line,
+                               object_pairs_hook=collections.OrderedDict
+                              )  # OrderedDict keeps keys sorted
         except ValueError:
             continue  # skip this line if it's invalid json
 
@@ -132,8 +135,12 @@ def get_events(since_timestamp=None, since_id=None):
         event_id = event.get('__id__')
 
         if event_timestamp > since_timestamp and event_id != since_id:
-            returned_events.append(event)  # this event is in the requested range so we add it to the response
+            returned_events.append(
+                event
+            )  # this event is in the requested range so we add it to the response
         else:
             break  # we've gone past the start of the range so we're done
 
-    return list(reversed(returned_events))  # events were added from latest to earliest; reverse to get correct order
+    return list(
+        reversed(returned_events)
+    )  # events were added from latest to earliest; reverse to get correct order

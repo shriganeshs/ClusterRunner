@@ -79,7 +79,9 @@ class BuildRunner(object):
         """
         build_url = self._master_api.url('build')
         # todo: catch connection error
-        response = self._network.post_with_digest(build_url, self._request_params, self._secret, error_on_failure=True)
+        response = self._network.post_with_digest(
+            build_url, self._request_params, self._secret,
+            error_on_failure=True)
         response_data = response.json()
 
         if 'error' in response_data:
@@ -88,7 +90,8 @@ class BuildRunner(object):
 
         self._build_id = response_data['build_id']
 
-        UnhandledExceptionHandler.singleton().add_teardown_callback(self._cancel_build)
+        UnhandledExceptionHandler.singleton().add_teardown_callback(
+            self._cancel_build)
         self._logger.info('Build is running. (Build id: {})', self._build_id)
 
     def _block_until_finished(self, timeout=None):
@@ -106,21 +109,28 @@ class BuildRunner(object):
             response = self._network.get(build_status_url)
             response_data = response.json()
 
-            if 'build' not in response_data or 'status' not in response_data['build']:
-                raise _BuildRunnerError('Status response does not contain a "build" object with a "status" value.'
-                                        'URL: {}, Content:{}'.format(build_status_url, response_data))
+            if 'build' not in response_data or 'status' not in response_data[
+                'build'
+            ]:
+                raise _BuildRunnerError(
+                    'Status response does not contain a "build" object with a "status" value.'
+                    'URL: {}, Content:{}'.format(build_status_url,
+                                                 response_data))
 
             build_data = response_data['build']
             if build_data['status'] == BuildStatus.FINISHED:
-                self._logger.info('Build is finished. (Build id: {})', self._build_id)
-                completion_message = 'Build {} result was {}'.format(self._build_id, build_data['result'])
+                self._logger.info('Build is finished. (Build id: {})',
+                                  self._build_id)
+                completion_message = 'Build {} result was {}'.format(
+                    self._build_id, build_data['result'])
                 is_success = build_data['result'] == BuildResult.NO_FAILURES
                 if is_success:
                     self._logger.info(completion_message)
                 else:
                     self._logger.error(completion_message)
                     if build_data['failed_atoms']:
-                        self._logger.error('These atoms had non-zero exit codes (failures):')
+                        self._logger.error(
+                            'These atoms had non-zero exit codes (failures):')
                         for failure in build_data['failed_atoms']:
                             self._logger.error(failure)
                     return False
@@ -128,7 +138,8 @@ class BuildRunner(object):
                 return True
 
             if build_data['status'] == BuildStatus.ERROR:
-                message = 'Build aborted due to error: {}'.format(build_data.get('error_message'))
+                message = 'Build aborted due to error: {}'.format(
+                    build_data.get('error_message'))
                 self._logger.error(message)
                 raise _BuildRunnerError(message)
 
@@ -139,7 +150,8 @@ class BuildRunner(object):
 
             time.sleep(1)
 
-        raise _BuildRunnerError('Build timed out after {} seconds.'.format(timeout))
+        raise _BuildRunnerError(
+            'Build timed out after {} seconds.'.format(timeout))
 
     def _download_and_extract_results(self, timeout=None):
         """
@@ -147,7 +159,8 @@ class BuildRunner(object):
         """
         timeout_time = time.time() + timeout if timeout else sys.maxsize
 
-        download_artifacts_url = self._master_api.url('build', self._build_id, 'result')
+        download_artifacts_url = self._master_api.url('build', self._build_id,
+                                                      'result')
         download_filepath = 'build_results/artifacts.tar.gz'
         download_dir, _ = os.path.split(download_filepath)
 
@@ -170,7 +183,8 @@ class BuildRunner(object):
 
             time.sleep(1)
 
-        raise _BuildRunnerError('Build timed out after {} seconds.'.format(timeout))
+        raise _BuildRunnerError(
+            'Build timed out after {} seconds.'.format(timeout))
 
     def _ensure_url_has_scheme(self, url):
         """

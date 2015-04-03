@@ -2,12 +2,7 @@ from app.project_type.directory import Directory
 from app.project_type.docker import Docker
 from app.project_type.git import Git
 
-
-_subclasses_by_name = {
-    'directory': Directory,
-    'docker': Docker,
-    'git': Git,
-}
+_subclasses_by_name = {'directory': Directory, 'docker': Docker, 'git': Git, }
 
 
 def project_type_subclasses_by_name():
@@ -19,7 +14,8 @@ def project_type_subclasses_by_name():
     :return: The ProjectType subclasses by type name
     :rtype: dict[str, type]
     """
-    return _subclasses_by_name.copy()  # copy to prevent unintended modification of original
+    return _subclasses_by_name.copy(
+    )  # copy to prevent unintended modification of original
 
 
 def get_project_type_subclass(project_type_name):
@@ -49,7 +45,9 @@ def create_project_type(project_type_params):
     project_type_name = project_type_params.pop('type')
     project_type_class = get_project_type_subclass(project_type_name)
     if project_type_class:
-        return project_type_class(**project_type_params)  # create object using project_type_params as constructor args
+        return project_type_class(
+            **project_type_params
+        )  # create object using project_type_params as constructor args
 
     # Not yet implemented other project types
     return None

@@ -5,6 +5,7 @@ class _ConfigurationMetaclass(type):
     """
     Metaclass for Configuration class to allow keyed access on the singleton instance
     """
+
     def __getitem__(cls, item):
         configuration = Configuration.singleton()
         return configuration.get(item)

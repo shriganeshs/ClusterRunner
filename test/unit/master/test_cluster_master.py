@@ -21,10 +21,10 @@ class TestClusterMaster(BaseUnitTestCase):
         self.patch('app.util.fs.async_delete')
 
     @genty_dataset(
-        slave_id_specified=({'slave_id': 400},),
-        slave_url_specified=({'slave_url': 'michelangelo.turtles.gov'},),
-    )
-    def test_get_slave_raises_exception_on_slave_not_found(self, get_slave_kwargs):
+        slave_id_specified=({'slave_id': 400}, ),
+        slave_url_specified=({'slave_url': 'michelangelo.turtles.gov'}, ), )
+    def test_get_slave_raises_exception_on_slave_not_found(self,
+                                                           get_slave_kwargs):
         master = ClusterMaster()
         master.connect_new_slave('raphael.turtles.gov', 10)
         master.connect_new_slave('leonardo.turtles.gov', 10)
@@ -33,11 +33,12 @@ class TestClusterMaster(BaseUnitTestCase):
         with self.assertRaises(ItemNotFoundError):
             master.get_slave(**get_slave_kwargs)
 
-    @genty_dataset(
-        both_arguments_specified=({'slave_id': 1, 'slave_url': 'raphael.turtles.gov'},),
-        neither_argument_specified=({},),
-    )
-    def test_get_slave_raises_exception_on_invalid_arguments(self, get_slave_kwargs):
+    @genty_dataset(both_arguments_specified=
+                   ({'slave_id': 1,
+                     'slave_url': 'raphael.turtles.gov'}, ),
+                   neither_argument_specified=({}, ), )
+    def test_get_slave_raises_exception_on_invalid_arguments(self,
+                                                             get_slave_kwargs):
         master = ClusterMaster()
         master.connect_new_slave('raphael.turtles.gov', 10)
 
@@ -53,9 +54,12 @@ class TestClusterMaster(BaseUnitTestCase):
         actual_slave_by_id = master.get_slave(slave_id=2)
         actual_slave_by_url = master.get_slave(slave_url='leonardo.turtles.gov')
 
-        self.assertEqual(2, actual_slave_by_id.id, 'Retrieved slave should have the same id as requested.')
-        self.assertEqual('leonardo.turtles.gov', actual_slave_by_url.url,
-                         'Retrieved slave should have the same url as requested.')
+        self.assertEqual(
+            2, actual_slave_by_id.id,
+            'Retrieved slave should have the same id as requested.')
+        self.assertEqual(
+            'leonardo.turtles.gov', actual_slave_by_url.url,
+            'Retrieved slave should have the same url as requested.')
 
     def test_update_build_with_valid_params_succeeds(self):
         build_id = 1
@@ -66,7 +70,8 @@ class TestClusterMaster(BaseUnitTestCase):
         build.validate_update_params = Mock(return_value=(True, update_params))
         build.update_state = Mock()
 
-        success, response = master.handle_request_to_update_build(build_id, update_params)
+        success, response = master.handle_request_to_update_build(
+            build_id, update_params)
 
         build.update_state.assert_called_once_with(update_params)
         self.assertTrue(success, "Update build should return success")
@@ -83,9 +88,12 @@ class TestClusterMaster(BaseUnitTestCase):
         build.update_state = Mock()
 
         with self.assertRaises(ItemNotFoundError):
-            master.handle_request_to_update_build(invalid_build_id, update_params)
+            master.handle_request_to_update_build(invalid_build_id,
+                                                  update_params)
 
-    def test_updating_slave_to_disconnected_state_should_mark_slave_as_dead(self):
+    def test_updating_slave_to_disconnected_state_should_mark_slave_as_dead(
+        self
+    ):
         master = ClusterMaster()
         slave_url = 'raphael.turtles.gov'
         master.connect_new_slave(slave_url, num_executors=10)
@@ -96,7 +104,9 @@ class TestClusterMaster(BaseUnitTestCase):
 
         self.assertFalse(slave.is_alive())
 
-    def test_updating_slave_to_disconnected_state_should_reset_slave_current_build_id(self):
+    def test_updating_slave_to_disconnected_state_should_reset_slave_current_build_id(
+        self
+    ):
         master = ClusterMaster()
         slave_url = 'raphael.turtles.gov'
         master.connect_new_slave(slave_url, num_executors=10)
@@ -107,7 +117,9 @@ class TestClusterMaster(BaseUnitTestCase):
 
         self.assertIsNone(slave.current_build_id)
 
-    def test_updating_slave_to_setup_completed_state_should_tell_build_to_begin_subjob_execution(self):
+    def test_updating_slave_to_setup_completed_state_should_tell_build_to_begin_subjob_execution(
+        self
+    ):
         master = ClusterMaster()
         fake_build = MagicMock()
         master.get_build = MagicMock(return_value=fake_build)
@@ -119,7 +131,9 @@ class TestClusterMaster(BaseUnitTestCase):
 
         fake_build.begin_subjob_executions_on_slave.assert_called_once_with(slave)
 
-    def test_updating_slave_to_nonexistent_state_should_raise_bad_request_error(self):
+    def test_updating_slave_to_nonexistent_state_should_raise_bad_request_error(
+        self
+    ):
         master = ClusterMaster()
         slave_url = 'raphael.turtles.gov'
         master.connect_new_slave(slave_url, 10)
@@ -128,7 +142,9 @@ class TestClusterMaster(BaseUnitTestCase):
         with self.assertRaises(BadRequestError):
             master.handle_slave_state_update(slave, 'NONEXISTENT_STATE')
 
-    def test_handle_result_reported_from_slave_does_nothing_when_build_is_canceled(self):
+    def test_handle_result_reported_from_slave_does_nothing_when_build_is_canceled(
+        self
+    ):
         build_id = 1
         slave_url = "url"
         build = Build(BuildRequest({}))
@@ -143,14 +159,21 @@ class TestClusterMaster(BaseUnitTestCase):
 
         master.handle_result_reported_from_slave(slave_url, build_id, 1)
 
-        self.assertEqual(build._handle_subjob_payload.call_count, 0, "Build is canceled, should not handle payload")
-        self.assertEqual(build._mark_subjob_complete.call_count, 0, "Build is canceled, should not complete subjobs")
-        self.assertEqual(build.execute_next_subjob_or_teardown_slave.call_count, 0,
-                         "Build is canceled, should not do next subjob")
+        self.assertEqual(build._handle_subjob_payload.call_count, 0,
+                         "Build is canceled, should not handle payload")
+        self.assertEqual(build._mark_subjob_complete.call_count, 0,
+                         "Build is canceled, should not complete subjobs")
+        self.assertEqual(
+            build.execute_next_subjob_or_teardown_slave.call_count, 0,
+            "Build is canceled, should not do next subjob")
 
-    def test_exception_raised_during_complete_subjob_does_not_prevent_slave_teardown(self):
+    def test_exception_raised_during_complete_subjob_does_not_prevent_slave_teardown(
+        self
+    ):
         slave_url = 'raphael.turtles.gov'
-        mock_build = Mock(spec_set=Build, build_id=lambda: 777, is_finished=False)
+        mock_build = Mock(spec_set=Build,
+                          build_id=lambda: 777,
+                          is_finished=False)
         mock_build.complete_subjob.side_effect = [RuntimeError('Write failed')]
 
         master = ClusterMaster()
@@ -158,6 +181,9 @@ class TestClusterMaster(BaseUnitTestCase):
         master._all_slaves_by_url[slave_url] = Mock()
 
         with self.assertRaisesRegex(RuntimeError, 'Write failed'):
-            master.handle_result_reported_from_slave(slave_url, mock_build.build_id(), subjob_id=888)
+            master.handle_result_reported_from_slave(slave_url,
+                                                     mock_build.build_id(),
+                                                     subjob_id=888)
 
-        self.assertEqual(mock_build.execute_next_subjob_or_teardown_slave.call_count, 1)
+        self.assertEqual(
+            mock_build.execute_next_subjob_or_teardown_slave.call_count, 1)

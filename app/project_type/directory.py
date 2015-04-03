@@ -14,7 +14,11 @@ class Directory(ProjectType):
         "project_directory": "examples/directory job",
     }
     """
-    def __init__(self, project_directory, config=None, job_name=None, build_project_directory=None,
+
+    def __init__(self, project_directory,
+                 config=None,
+                 job_name=None,
+                 build_project_directory=None,
                  remote_files=None):
         """
         Note: the first line of each parameter docstring will be exposed as command line argument documentation for the
@@ -37,10 +41,13 @@ class Directory(ProjectType):
 
     def _fetch_project(self):
         check_command = 'test -d "{}"'.format(self.project_directory)
-        output, exit_code = self.execute_command_in_project(check_command, cwd='/')
+        output, exit_code = self.execute_command_in_project(check_command,
+                                                            cwd='/')
         if exit_code != 0:
-            raise RuntimeError('Could not find the directory "{}" on {}. Directory build mode is not supported on '
-                               'clusters with remote slaves.'.format(self.project_directory, node()))
+            raise RuntimeError(
+                'Could not find the directory "{}" on {}. Directory build mode is not supported on '
+                'clusters with remote slaves.'.format(self.project_directory,
+                                                      node()))
 
     def execute_command_in_project(self, *args, **kwargs):
         """
@@ -57,12 +64,11 @@ class Directory(ProjectType):
             that the timing file exists.
         :rtype: string
         """
-        timings_subdirectory = os.path.splitdrive(self.project_directory)[1][1:]  # cut off mount point and leading '/'
-        return os.path.join(
-            Configuration['timings_directory'],
-            timings_subdirectory,
-            '{}.timing.json'.format(job_name)
-        )
+        timings_subdirectory = os.path.splitdrive(
+            self.project_directory)[1][1:]  # cut off mount point and leading '/'
+        return os.path.join(Configuration['timings_directory'],
+                            timings_subdirectory,
+                            '{}.timing.json'.format(job_name))
 
     def project_id(self):
         return self.project_directory

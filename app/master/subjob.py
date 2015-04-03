@@ -31,7 +31,8 @@ class Subjob(object):
         self.project_type = project_type
         self.job_config = job_config
         self._atoms = atoms
-        self.timings = {}  # a dict, atom_ids are the keys and seconds are the values
+        self.timings = {
+        }  # a dict, atom_ids are the keys and seconds are the values
 
     def api_representation(self):
         """
@@ -44,7 +45,8 @@ class Subjob(object):
         }
 
     def get_atoms(self):
-        return [{'id': idx, 'atom': atom} for idx, atom in enumerate(self._atoms)]
+        return [{'id': idx,
+                 'atom': atom} for idx, atom in enumerate(self._atoms)]
 
     def build_id(self):
         """
@@ -76,9 +78,10 @@ class Subjob(object):
         :param str result_root: root of the result path
         :rtype: str
         """
-        return os.path.join(self.artifact_dir(result_root),
-                            Subjob.ATOM_DIR_FORMAT.format(self._subjob_id, atom_id),
-                            Subjob.TIMING_FILE)
+        return os.path.join(
+            self.artifact_dir(result_root),
+            Subjob.ATOM_DIR_FORMAT.format(self._subjob_id, atom_id),
+            Subjob.TIMING_FILE)
 
     def add_timings(self, timings):
         """
@@ -98,7 +101,8 @@ class Subjob(object):
         for atom_id, atom in enumerate(self._atoms):
 
             timings_file_path = self._timings_file_path(
-                atom_id, result_root=Configuration['results_directory'])
+                atom_id,
+                result_root=Configuration['results_directory'])
             if os.path.exists(timings_file_path):
                 with open(timings_file_path, 'r') as f:
                     # Strip out the project directory from atom timing data in order to have all
@@ -111,7 +115,8 @@ class Subjob(object):
                                      self._subjob_id, atom_id)
 
         if len(timings) == 0:
-            self._logger.warning('No timing data for subjob {}.', self._subjob_id)
+            self._logger.warning('No timing data for subjob {}.',
+                                 self._subjob_id)
 
         return timings
 
@@ -122,7 +127,5 @@ class Subjob(object):
         :type result_root: str
         :rtype: string
         """
-        return os.path.join(
-            result_root or Configuration['artifact_directory'],
-            str(self._build_id)
-        )
+        return os.path.join(result_root or Configuration['artifact_directory'],
+                            str(self._build_id))

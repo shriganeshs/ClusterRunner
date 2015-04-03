@@ -45,7 +45,9 @@ class Secret:
         :return: A 64 character hex string
         :rtype: str
         """
-        hmac_digester = hmac.new(secret.encode('utf-8'), message.encode('utf-8'), digestmod='sha512')
+        hmac_digester = hmac.new(secret.encode('utf-8'),
+                                 message.encode('utf-8'),
+                                 digestmod='sha512')
         return hmac_digester.hexdigest()
 
     @classmethod

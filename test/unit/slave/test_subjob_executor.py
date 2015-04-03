@@ -5,8 +5,9 @@ from test.framework.base_unit_test_case import BaseUnitTestCase
 
 
 class TestSubjobExecutor(BaseUnitTestCase):
-
-    def test_configure_project_type_passes_project_type_params_and_calls_setup_executor(self):
+    def test_configure_project_type_passes_project_type_params_and_calls_setup_executor(
+        self
+    ):
         project_type_params = {'test': 'value'}
         util = self.patch('app.slave.subjob_executor.util')
         util.create_project_type = Mock(return_value=Mock())
@@ -17,7 +18,9 @@ class TestSubjobExecutor(BaseUnitTestCase):
         util.create_project_type.assert_called_with(project_type_params)
         executor._project_type.setup_executor.assert_called_with()
 
-    def test_configure_project_type_with_existing_project_type_calls_teardown(self):
+    def test_configure_project_type_with_existing_project_type_calls_teardown(
+        self
+    ):
         executor = SubjobExecutor(1)
         executor._project_type = Mock()
         self.patch('app.slave.subjob_executor.util')
@@ -26,7 +29,8 @@ class TestSubjobExecutor(BaseUnitTestCase):
 
         executor._project_type.teardown_executor.assert_called_once()
 
-    def test_run_job_config_setup_calls_project_types_run_job_config_setup(self):
+    def test_run_job_config_setup_calls_project_types_run_job_config_setup(self
+                                                                          ):
         executor = SubjobExecutor(1)
         executor._project_type = Mock()
 
@@ -34,10 +38,13 @@ class TestSubjobExecutor(BaseUnitTestCase):
 
         executor._project_type.run_job_config_setup.assert_called_with()
 
-    def test_execute_subjob_passes_correct_build_executor_index_to_execute_command_in_project(self):
+    def test_execute_subjob_passes_correct_build_executor_index_to_execute_command_in_project(
+        self
+    ):
         executor = SubjobExecutor(1)
         executor._project_type = Mock()
-        executor._project_type.execute_command_in_project = Mock(return_value=(1, 2))
+        executor._project_type.execute_command_in_project = Mock(
+            return_value=(1, 2))
         self.patch('app.slave.subjob_executor.fs_util')
         self.patch('app.slave.subjob_executor.shutil')
         os = self.patch('app.slave.subjob_executor.os')
@@ -53,7 +60,11 @@ class TestSubjobExecutor(BaseUnitTestCase):
             'BUILD_EXECUTOR_INDEX': 8
         }
 
-        executor.execute_subjob(build_id=1, subjob_id=2, subjob_artifact_dir='dir', atomic_commands=atomic_commands,
+        executor.execute_subjob(build_id=1,
+                                subjob_id=2,
+                                subjob_artifact_dir='dir',
+                                atomic_commands=atomic_commands,
                                 base_executor_index=6)
 
-        executor._project_type.execute_command_in_project.assert_called_with('command', expected_env_vars)
+        executor._project_type.execute_command_in_project.assert_called_with(
+            'command', expected_env_vars)

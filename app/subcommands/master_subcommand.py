@@ -25,7 +25,8 @@ class MasterSubcommand(ServiceSubcommand):
         log_level = log_level or Configuration['log_level']
         eventlog_file = eventlog_file or Configuration['eventlog_file']
 
-        log.configure_logging(log_level=log_level, log_file=Configuration['log_file'])
+        log.configure_logging(log_level=log_level,
+                              log_file=Configuration['log_file'])
         analytics.initialize(eventlog_file)
         analytics.record_event(analytics.SERVICE_STARTED, service='master')
 
@@ -38,9 +39,13 @@ class MasterSubcommand(ServiceSubcommand):
 
         # log startup message once ioloop is running
         hostname = Configuration['hostname']
-        log_startup = functools.partial(self._logger.info, 'Master service is running on {}:{}.'.format(hostname, port))
+        log_startup = functools.partial(
+            self._logger.info,
+            'Master service is running on {}:{}.'.format(hostname, port))
         ioloop.add_callback(log_startup)
 
         ioloop.start()  # this call blocks until the server is stopped
-        ioloop.close(all_fds=True)  # all_fds=True is necessary here to make sure connections don't hang
+        ioloop.close(
+            all_fds=True
+        )  # all_fds=True is necessary here to make sure connections don't hang
         self._logger.notice('Master server was stopped.')

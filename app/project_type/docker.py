@@ -18,8 +18,14 @@ class Docker(ProjectType):
     }
     """
 
-    def __init__(self, image, project_directory, mounted_volumes=None, user=None, host=None, config=None,
-                 job_name=None, build_project_directory=None, remote_files=None):
+    def __init__(self, image, project_directory,
+                 mounted_volumes=None,
+                 user=None,
+                 host=None,
+                 config=None,
+                 job_name=None,
+                 build_project_directory=None,
+                 remote_files=None):
         """
         Note: the first line of each parameter docstring will be exposed as command line argument documentation for the
         clusterrunner build client.
@@ -53,7 +59,8 @@ class Docker(ProjectType):
 
     def _fetch_project(self):
         pull_command = 'docker pull {}'.format(self._image)
-        self._execute_in_project_and_raise_on_failure(pull_command, 'Could not pull Docker container.')
+        self._execute_in_project_and_raise_on_failure(
+            pull_command, 'Could not pull Docker container.')
 
     def _get_config_contents(self):
         """
@@ -61,11 +68,14 @@ class Docker(ProjectType):
         :return: The contents of cluster_runner.yaml
         :rtype: str
         """
-        yaml_path = os.path.join(self.project_directory, Configuration['project_yaml_filename'])
-        raw_config_contents, _ = self.execute_command_in_project("cat " + yaml_path)
+        yaml_path = os.path.join(self.project_directory,
+                                 Configuration['project_yaml_filename'])
+        raw_config_contents, _ = self.execute_command_in_project(
+            "cat " + yaml_path)
 
         if raw_config_contents is None:
-            raise RuntimeError('Could not read {} from the Docker container'.format(yaml_path))
+            raise RuntimeError(
+                'Could not read {} from the Docker container'.format(yaml_path))
 
         return raw_config_contents
 
@@ -80,7 +90,9 @@ class Docker(ProjectType):
         for executor in executors:
             executor.run_job_config_setup()
 
-    def execute_command_in_project(self, command, extra_environment_vars=None, **popen_kwargs):
+    def execute_command_in_project(self, command,
+                                   extra_environment_vars=None,
+                                   **popen_kwargs):
         """
         Execute a command in the docker container. Starts a docker session
 
@@ -93,8 +105,10 @@ class Docker(ProjectType):
         :return: a tuple of (the string output from the command, the exit code of the command)
         :rtype: (string, int)
         """
-        environment_setter = self.shell_environment_command(extra_environment_vars)
-        command = self.command_in_project('{} {}'.format(environment_setter, command))
+        environment_setter = self.shell_environment_command(
+            extra_environment_vars)
+        command = self.command_in_project('{} {}'.format(environment_setter,
+                                                         command))
         self._logger.debug('Executing command in project: {}', command)
 
         return self._container.run(command)
@@ -127,12 +141,11 @@ class Docker(ProjectType):
         else:
             full_image_without_tag = self._image
 
-        file_system_friendly_docker_image = self._remove_file_system_unfriendly_characters(full_image_without_tag)
-        return os.path.join(
-            Configuration['timings_directory'],
-            file_system_friendly_docker_image,
-            "{}.timing.json".format(job_name)
-        )
+        file_system_friendly_docker_image = self._remove_file_system_unfriendly_characters(
+            full_image_without_tag)
+        return os.path.join(Configuration['timings_directory'],
+                            file_system_friendly_docker_image,
+                            "{}.timing.json".format(job_name))
 
     def kill_subprocesses(self):
         """

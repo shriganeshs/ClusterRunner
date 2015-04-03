@@ -38,4 +38,5 @@ class MasterConfigLoader(BaseConfigLoader):
         conf.set('eventlog_file', join(log_dir, 'eventlog_master.log'))
         # where to store results on the master
         conf.set('results_directory', join(base_directory, 'results', 'master'))
-        conf.set('timings_directory', join(base_directory, 'timings', 'master'))  # timing data
+        conf.set('timings_directory', join(base_directory, 'timings',
+                                           'master'))  # timing data

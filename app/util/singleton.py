@@ -35,7 +35,8 @@ class Singleton(object):
         """
         with self._instance_lock:
             if self._singleton_instance is not None:
-                raise SingletonError('Cannot instantiate singleton more than once. Use the singleton() class method.')
+                raise SingletonError(
+                    'Cannot instantiate singleton more than once. Use the singleton() class method.')
 
 
 class SingletonError(Exception):

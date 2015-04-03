@@ -9,7 +9,6 @@ from app.util.decorators import retry_on_exception_exponential_backoff
 from app.util.log import get_logger
 from app.util.secret import Secret
 
-
 ENCODED_BODY = '__encoded_body__'
 
 
@@ -18,6 +17,7 @@ class Network(object):
     This is a wrapper around the requests library. This class contains things like logic to implement network retries,
     convenience methods for authenticated network calls, etc.
     """
+
     def __init__(self, min_connection_poolsize=DEFAULT_POOLSIZE):
         """
         :param min_connection_poolsize: The minimum connection pool size for this instance
@@ -27,7 +27,8 @@ class Network(object):
         self._logger = get_logger(__name__)
 
         poolsize = max(min_connection_poolsize, DEFAULT_POOLSIZE)
-        self._session.mount('http://', HTTPAdapter(pool_connections=poolsize, pool_maxsize=poolsize))
+        self._session.mount('http://', HTTPAdapter(pool_connections=poolsize,
+                                                   pool_maxsize=poolsize))
 
     def get(self, *args, **kwargs):
         """
@@ -39,7 +40,9 @@ class Network(object):
         return self._request('GET', *args, **kwargs)
 
     # todo: may be a bad idea to retry -- what if post was successful but just had a response error?
-    @retry_on_exception_exponential_backoff(exceptions=(requests.ConnectionError,))
+    @retry_on_exception_exponential_backoff(
+        exceptions=(requests.ConnectionError, )
+    )
     def post(self, *args, **kwargs):
         """
         Send a POST request to a url. Arguments to this method, unless otherwise documented below in _request(), are
@@ -49,7 +52,8 @@ class Network(object):
         """
         return self._request('POST', *args, **kwargs)
 
-    def post_with_digest(self, url, request_params, secret, error_on_failure=False):
+    def post_with_digest(self, url, request_params, secret,
+                         error_on_failure=False):
         """
         Post to a url with the Message Authentication Digest
         :type url: str
@@ -58,11 +62,14 @@ class Network(object):
         :rtype: requests.Response
         """
         encoded_body = self.encode_body(request_params)
-        return self.post(url, encoded_body, headers=Secret.header(encoded_body, secret),
+        return self.post(url, encoded_body,
+                         headers=Secret.header(encoded_body, secret),
                          error_on_failure=error_on_failure)
 
     # todo: may be a bad idea to retry -- what if put was successful but just had a response error?
-    @retry_on_exception_exponential_backoff(exceptions=(requests.ConnectionError,))
+    @retry_on_exception_exponential_backoff(
+        exceptions=(requests.ConnectionError, )
+    )
     def put(self, *args, **kwargs):
         """
         Send a PUT request to a url. Arguments to this method, unless otherwise documented below in _request(), are
@@ -72,7 +79,8 @@ class Network(object):
         """
         return self._request('PUT', *args, **kwargs)
 
-    def put_with_digest(self, url, request_params, secret, error_on_failure=False):
+    def put_with_digest(self, url, request_params, secret,
+                        error_on_failure=False):
         """
         Put to a url with the Message Authentication Digest
         :type url: str
@@ -81,7 +89,8 @@ class Network(object):
         :rtype: requests.Response
         """
         encoded_body = self.encode_body(request_params)
-        return self.put(url, encoded_body, headers=Secret.header(encoded_body, secret),
+        return self.put(url, encoded_body,
+                        headers=Secret.header(encoded_body, secret),
                         error_on_failure=error_on_failure)
 
     def encode_body(self, body_decoded):
@@ -91,7 +100,10 @@ class Network(object):
         """
         return json.dumps(body_decoded)
 
-    def _request(self, method, url, data=None, should_encode_body=True, error_on_failure=False, *args, **kwargs):
+    def _request(self, method, url,
+                 data=None,
+                 should_encode_body=True,
+                 error_on_failure=False, *args, **kwargs):
         """
         A wrapper around requests library network request methods (e.g., GET, POST). We can add functionality for
         unimplemented request methods as needed. We also do some mutation on request bodies to make receiving data (in
@@ -121,10 +133,12 @@ class Network(object):
         if should_encode_body and isinstance(data_to_send, dict):
             data_to_send = {ENCODED_BODY: self.encode_body(data_to_send)}
 
-        resp = self._session.request(method, url, data=data_to_send, *args, **kwargs)
+        resp = self._session.request(method, url,
+                                     data=data_to_send, *args, **kwargs)
         if not resp.ok and error_on_failure:
-            raise _RequestFailedError('Request to {} failed with status_code {} and response "{}"'.
-                                      format(url, str(resp.status_code), resp.text))
+            raise _RequestFailedError(
+                'Request to {} failed with status_code {} and response "{}"'.format(
+                    url, str(resp.status_code), resp.text))
         return resp
 
     @staticmethod
@@ -166,11 +180,16 @@ class Network(object):
         :return: the rsa key string, without the 'ssh-rsa' prefix. Returns None if failed ssh-keyscan fails.
         :rtype: str|None
         """
-        proc = subprocess.Popen('ssh-keyscan -t rsa {}'.format(host), shell=True, stdout=PIPE, stderr=PIPE)
+        proc = subprocess.Popen('ssh-keyscan -t rsa {}'.format(host),
+                                shell=True,
+                                stdout=PIPE,
+                                stderr=PIPE)
         output, error = proc.communicate()
 
         if proc.returncode != 0:
-            log.get_logger(__name__).error('Failed to get rsa string with output: {}, error: {}'.format(output, error))
+            log.get_logger(__name__).error(
+                'Failed to get rsa string with output: {}, error: {}'.format(
+                    output, error))
             return None
 
         line = output.decode("utf-8")

@@ -5,6 +5,7 @@ class AnyStringMatching(object):
     """
     A helper object that compares equal to any string matching the specified pattern.
     """
+
     def __init__(self, pattern):
         self._pattern = pattern
 
@@ -20,6 +21,7 @@ class AnythingOfType(object):
     """
     A helper object that compares equal to any object of the specified type.
     """
+
     def __init__(self, accepted_type):
         self._type = accepted_type
 

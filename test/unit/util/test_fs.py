@@ -3,7 +3,6 @@ from test.framework.base_unit_test_case import BaseUnitTestCase
 
 
 class TestFs(BaseUnitTestCase):
-
     def test_async_delete_calls_correct_commands(self):
         popen_mock = self.patch('subprocess.Popen')
         move_mock = self.patch('shutil.move')

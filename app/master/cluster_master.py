@@ -50,7 +50,8 @@ class ClusterMaster(object):
         Gets a dict representing this resource which can be returned in an API response.
         :rtype: dict [str, mixed]
         """
-        slaves_representation = [slave.api_representation() for slave in self.all_slaves_by_id().values()]
+        slaves_representation = [slave.api_representation()
+                                 for slave in self.all_slaves_by_id().values()]
         return {
             'status': self._get_status(),
             'slaves': slaves_representation,
@@ -93,7 +94,8 @@ class ClusterMaster(object):
         :rtype: Slave
         """
         if (slave_id is None) == (slave_url is None):
-            raise ValueError('Only one of slave_id or slave_url should be specified to get_slave().')
+            raise ValueError(
+                'Only one of slave_id or slave_url should be specified to get_slave().')
 
         if slave_id is not None:
             for slave in self._all_slaves_by_url.values():
@@ -103,7 +105,8 @@ class ClusterMaster(object):
             if slave_url in self._all_slaves_by_url:
                 return self._all_slaves_by_url[slave_url]
 
-        raise ItemNotFoundError('Requested slave ({}) does not exist.'.format(slave_id))
+        raise ItemNotFoundError(
+            'Requested slave ({}) does not exist.'.format(slave_id))
 
     def connect_new_slave(self, slave_url, num_executors):
         """
@@ -118,8 +121,9 @@ class ClusterMaster(object):
         self._all_slaves_by_url[slave_url] = slave
         self._slave_allocator.add_idle_slave(slave)
 
-        self._logger.info('Slave on {} connected to master with {} executors. (id: {})',
-                          slave_url, num_executors, slave.id)
+        self._logger.info(
+            'Slave on {} connected to master with {} executors. (id: {})',
+            slave_url, num_executors, slave.id)
         return {'slave_id': str(slave.id)}
 
     def handle_slave_state_update(self, slave, new_slave_state):
@@ -137,8 +141,10 @@ class ClusterMaster(object):
         }
 
         if new_slave_state not in slave_transition_functions:
-            raise BadRequestError('Invalid slave state "{}". Valid states are: {}.'
-                                  .format(new_slave_state, ', '.join(slave_transition_functions.keys())))
+            raise BadRequestError(
+                'Invalid slave state "{}". Valid states are: {}.'.format(
+                    new_slave_state,
+                    ', '.join(slave_transition_functions.keys())))
 
         do_transition = slave_transition_functions.get(new_slave_state)
         do_transition(slave)
@@ -154,7 +160,8 @@ class ClusterMaster(object):
         slave.set_is_alive(False)
         slave.current_build_id = None
         # todo: Fail/resend any currently executing subjobs still executing on this slave.
-        self._logger.info('Slave on {} was disconnected. (id: {})', slave.url, slave.id)
+        self._logger.info('Slave on {} was disconnected. (id: {})', slave.url,
+                          slave.id)
 
     def _handle_setup_success_on_slave(self, slave):
         """
@@ -172,7 +179,8 @@ class ClusterMaster(object):
 
         :type slave: Slave
         """
-        raise BadRequestError('Setup failure handling on the master is not yet implemented.')
+        raise BadRequestError(
+            'Setup failure handling on the master is not yet implemented.')
 
     def handle_request_for_new_build(self, build_params):
         """
@@ -196,7 +204,11 @@ class ClusterMaster(object):
             response = {'error': 'Invalid build request type.'}
         else:
             required_params = build_request.required_parameters()
-            response = {'error': 'Missing required parameter. Required parameters: {}'.format(required_params)}
+            response = {
+                'error':
+                'Missing required parameter. Required parameters: {}'.format(
+                    required_params)
+            }
 
         return success, response  # todo: refactor to use exception instead of boolean
 
@@ -219,7 +231,8 @@ class ClusterMaster(object):
             return success, response
         return build.update_state(update_params), {}
 
-    def handle_result_reported_from_slave(self, slave_url, build_id, subjob_id, payload=None):
+    def handle_result_reported_from_slave(self, slave_url, build_id, subjob_id,
+                                          payload=None):
         """
         Process the result and dispatch the next subjob
         :type slave_url: str
@@ -228,7 +241,9 @@ class ClusterMaster(object):
         :type payload: dict
         :rtype: str
         """
-        self._logger.info('Results received from {} for subjob. (Build {}, Subjob {})', slave_url, build_id, subjob_id)
+        self._logger.info(
+            'Results received from {} for subjob. (Build {}, Subjob {})',
+            slave_url, build_id, subjob_id)
         build = self._all_builds_by_id[int(build_id)]
         slave = self._all_slaves_by_url[slave_url]
         # If the build has been canceled, don't work on the next subjob.
@@ -266,6 +281,7 @@ class ClusterMaster(object):
 
         archive_file = build.artifacts_archive_file
         if archive_file is None:
-            raise ItemNotReadyError('Build artifact file is not yet ready. Try again later.')
+            raise ItemNotReadyError(
+                'Build artifact file is not yet ready. Try again later.')
 
         return archive_file

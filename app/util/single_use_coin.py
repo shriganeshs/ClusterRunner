@@ -9,6 +9,7 @@ class SingleUseCoin(object):
     The first time spend() is called, it will return True. All subsequent calls to spend() will return False. If many
     threads call spend(), it is guaranteed that exactly one will return True.
     """
+
     def __init__(self):
         self._is_spent = False
         self._spend_lock = Lock()

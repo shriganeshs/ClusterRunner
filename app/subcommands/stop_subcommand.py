@@ -11,7 +11,8 @@ from app.util.conf.configuration import Configuration
 class StopSubcommand(Subcommand):
 
     # The commands that can be used to identify a clusterrunner process (for accurate killing).
-    _command_whitelist_keywords = ['clusterrunner', 'main.py master', 'main.py slave']
+    _command_whitelist_keywords = ['clusterrunner', 'main.py master',
+                                   'main.py slave']
     # The number of seconds to wait between performing a SIGTERM and a SIGKILL
     SIGTERM_SIGKILL_GRACE_PERIOD_SEC = 2
 
@@ -26,8 +27,7 @@ class StopSubcommand(Subcommand):
         log.configure_logging(
             log_level=log_level or Configuration['log_level'],
             log_file=Configuration['log_file'],
-            simplified_console_logs=True,
-        )
+            simplified_console_logs=True, )
         self._kill_pid_in_file_if_exists(Configuration['slave_pid_file'])
         self._kill_pid_in_file_if_exists(Configuration['master_pid_file'])
 
@@ -39,14 +39,17 @@ class StopSubcommand(Subcommand):
         :type pid_file_path: str
         """
         if not os.path.exists(pid_file_path):
-            self._logger.info("Pid file {0} does not exist.".format(pid_file_path))
+            self._logger.info(
+                "Pid file {0} does not exist.".format(pid_file_path))
             return
 
         with open(pid_file_path, 'r') as f:
             pid = f.readline()
 
         if not psutil.pid_exists(int(pid)):
-            self._logger.info("Pid file {0} exists, but pid {1} doesn't exist.".format(pid_file_path, pid))
+            self._logger.info(
+                "Pid file {0} exists, but pid {1} doesn't exist.".format(
+                    pid_file_path, pid))
             os.remove(pid_file_path)
             return
 
@@ -62,7 +65,8 @@ class StopSubcommand(Subcommand):
 
         if not matched_proc_command:
             self._logger.info(
-                "PID {0} is running, but command '{1}' is not a clusterrunner command".format(proc.pid, proc_command))
+                "PID {0} is running, but command '{1}' is not a clusterrunner command".format(
+                    proc.pid, proc_command))
             return
 
         # Try killing gracefully with SIGTERM first. Then give process some time to gracefully shutdown. If it
@@ -72,8 +76,10 @@ class StopSubcommand(Subcommand):
         self.kill_running_procs(procs_to_kill, signal.SIGTERM)
         sigterm_start = time.time()
 
-        while (time.time()-sigterm_start) <= self.SIGTERM_SIGKILL_GRACE_PERIOD_SEC:
-            if not any([proc_to_kill.is_running() for proc_to_kill in procs_to_kill]):
+        while (time.time() - sigterm_start
+              ) <= self.SIGTERM_SIGKILL_GRACE_PERIOD_SEC:
+            if not any([proc_to_kill.is_running()
+                        for proc_to_kill in procs_to_kill]):
                 break
             time.sleep(0.1)
 
@@ -81,7 +87,8 @@ class StopSubcommand(Subcommand):
             self.kill_running_procs(procs_to_kill, signal.SIGKILL)
             return
         else:
-            self._logger.info("Killed all running clusterrunner processes with SIGTERM")
+            self._logger.info(
+                "Killed all running clusterrunner processes with SIGTERM")
 
     def kill_running_procs(self, procs_to_kill, sig):
         """

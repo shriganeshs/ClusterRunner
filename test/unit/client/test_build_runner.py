@@ -6,7 +6,6 @@ from test.framework.base_unit_test_case import BaseUnitTestCase
 
 
 class TestBuildRunner(BaseUnitTestCase):
-
     def mock_runner_with_status_response(self, response):
         runner = BuildRunner('url', {}, 'mellon')
         start_response = Response()
@@ -19,12 +18,16 @@ class TestBuildRunner(BaseUnitTestCase):
         return runner
 
     def test_runner_should_request_results_after_build_finishes(self):
-        runner = self.mock_runner_with_status_response({"build": {"status": "FINISHED", "result": "NO_FAILURES"}})
+        runner = self.mock_runner_with_status_response(
+            {"build": {"status": "FINISHED",
+                       "result": "NO_FAILURES"}})
         runner.run()
-        self.assertTrue(runner._download_and_extract_results.called, 'Client should have tried to download results')
+        self.assertTrue(runner._download_and_extract_results.called,
+                        'Client should have tried to download results')
 
     def test_runner_should_abort_when_status_is_error(self):
-        runner = self.mock_runner_with_status_response({"build": {"status": "ERROR"}})
+        runner = self.mock_runner_with_status_response(
+            {"build": {"status": "ERROR"}})
         runner._cancel_build = Mock()
 
         runner.run()

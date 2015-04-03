@@ -31,7 +31,9 @@ class FSItem(object):
             raise FSAssertionError('Path "{}" does not exist.'.format(path))
 
         if self.name != os.path.basename(path):
-            raise FSAssertionError('Path "{}" does not match the expected name of "{}".'.format(path, self.name))
+            raise FSAssertionError(
+                'Path "{}" does not match the expected name of "{}".'.format(
+                    path, self.name))
 
         self._assert_specific_type_matches_path(path, allow_extra_items)
 
@@ -76,10 +78,14 @@ class Directory(FSItem):
         for fs_item in self.contents:
             subpath = os.path.join(path, fs_item.name)
             fs_item.assert_matches_path(subpath, allow_extra_items)
-            extra_items.remove(fs_item.name)  # No need to catch ValueError here since we know subpath exists.
+            extra_items.remove(
+                fs_item.name
+            )  # No need to catch ValueError here since we know subpath exists.
 
         if extra_items and not allow_extra_items:
-            raise FSAssertionError('Directory "{}" had unexpected items: {}'.format(path, extra_items))
+            raise FSAssertionError(
+                'Directory "{}" had unexpected items: {}'.format(path,
+                                                                 extra_items))
 
 
 class File(FSItem):
@@ -110,8 +116,10 @@ class File(FSItem):
                 actual_file_contents = f.read()
 
             if actual_file_contents != self.contents:
-                raise FSAssertionError('File "{}" contents did not match expected contents.\nExpected:\n"{}"\n'
-                                       'Actual:\n"{}"'.format(path, self.contents, actual_file_contents))
+                raise FSAssertionError(
+                    'File "{}" contents did not match expected contents.\nExpected:\n"{}"\n'
+                    'Actual:\n"{}"'.format(path, self.contents,
+                                           actual_file_contents))
 
 
 class FSAssertionError(AssertionError):
