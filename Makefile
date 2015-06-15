@@ -30,7 +30,7 @@ test-unit-via-clusterrunner:
 
 test-functional:
 	$(call print_msg, Running functional tests... )
-	nosetests -s -v test/functional
+	nosetests -s -v test/functional/master/test_shutdown.py
 
 freeze:
 	$(call print_msg, Freezing... )
