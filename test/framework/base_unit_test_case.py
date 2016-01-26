@@ -5,13 +5,13 @@ import os
 from unittest import TestCase
 from unittest.mock import MagicMock, NonCallableMock, patch
 
-from app.master.build import Build
-from app.master.slave import Slave
-from app.util import analytics, log
-from app.util.conf.configuration import Configuration
-from app.util.conf.master_config_loader import MasterConfigLoader
-from app.util.counter import Counter
-from app.util.unhandled_exception_handler import UnhandledExceptionHandler
+from clusterrunner.app.master.build import Build
+from clusterrunner.app.master.slave import Slave
+from clusterrunner.app.util import analytics, log
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.util.conf.master_config_loader import MasterConfigLoader
+from clusterrunner.app.util.counter import Counter
+from clusterrunner.app.util.unhandled_exception_handler import UnhandledExceptionHandler
 
 
 class BaseUnitTestCase(TestCase):

@@ -1,9 +1,9 @@
 from unittest.mock import Mock
 
-from app.master.build import Build
-from app.master.build_request_handler import BuildRequestHandler
-from app.master.slave import Slave
-from app.master.slave_allocator import SlaveAllocator
+from clusterrunner.app.master.build import Build
+from clusterrunner.app.master.build_request_handler import BuildRequestHandler
+from clusterrunner.app.master.slave import Slave
+from clusterrunner.app.master.slave_allocator import SlaveAllocator
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

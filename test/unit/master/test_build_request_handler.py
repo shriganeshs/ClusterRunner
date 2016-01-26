@@ -1,6 +1,6 @@
 from genty import genty, genty_dataset
 
-from app.master.build_request_handler import BuildRequestHandler
+from clusterrunner.app.master.build_request_handler import BuildRequestHandler
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

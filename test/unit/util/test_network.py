@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from genty import genty, genty_dataset
 
-from app.util.network import Network
+from clusterrunner.app.util.network import Network
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

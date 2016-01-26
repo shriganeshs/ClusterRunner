@@ -1,7 +1,7 @@
 from genty import genty, genty_dataset
 
-from app.util.conf.base_config_loader import BaseConfigLoader, InvalidConfigError
-from app.util.conf.configuration import Configuration
+from clusterrunner.app.util.conf.base_config_loader import BaseConfigLoader, InvalidConfigError
+from clusterrunner.app.util.conf.configuration import Configuration
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

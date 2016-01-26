@@ -1,6 +1,6 @@
 from genty import genty, genty_dataset, genty_args
 
-from app.util.process_utils import Popen_with_delayed_expansion, get_environment_variable_setter_command
+from clusterrunner.app.util.process_utils import Popen_with_delayed_expansion, get_environment_variable_setter_command
 
 from test.framework.base_unit_test_case import BaseUnitTestCase
 

@@ -1,8 +1,8 @@
 from unittest.mock import Mock
 
-from app.master.atomizer import Atomizer, AtomizerError
-from app.project_type.project_type import ProjectType
-from app.util.process_utils import get_environment_variable_setter_command
+from clusterrunner.app.master.atomizer import Atomizer, AtomizerError
+from clusterrunner.app.project_type.project_type import ProjectType
+from clusterrunner.app.util.process_utils import get_environment_variable_setter_command
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

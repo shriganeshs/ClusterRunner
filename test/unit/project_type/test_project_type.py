@@ -2,10 +2,10 @@ from genty import genty, genty_dataset
 from subprocess import TimeoutExpired
 from unittest.mock import ANY, MagicMock
 
-from app.master.job_config import JobConfig
-from app.project_type.project_type import ProjectType
-from app.util.safe_thread import SafeThread
-from app.util.unhandled_exception_handler import UnhandledExceptionHandler
+from clusterrunner.app.master.job_config import JobConfig
+from clusterrunner.app.project_type.project_type import ProjectType
+from clusterrunner.app.util.safe_thread import SafeThread
+from clusterrunner.app.util.unhandled_exception_handler import UnhandledExceptionHandler
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

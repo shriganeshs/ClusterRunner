@@ -1,5 +1,5 @@
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.singleton import Singleton, SingletonError
+from clusterrunner.app.util.singleton import Singleton, SingletonError
 
 
 class TestSingleton(BaseUnitTestCase):

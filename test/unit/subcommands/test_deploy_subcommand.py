@@ -5,8 +5,8 @@ import uuid
 
 from genty import genty, genty_dataset, genty_args
 
-from app.subcommands.deploy_subcommand import DeploySubcommand
-from app.util.network import Network
+from clusterrunner.app.subcommands.deploy_subcommand import DeploySubcommand
+from clusterrunner.app.util.network import Network
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

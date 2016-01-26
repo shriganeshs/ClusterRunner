@@ -3,11 +3,11 @@ from hypothesis import given
 from hypothesis.strategies import text, dictionaries, integers
 from unittest.mock import MagicMock, Mock
 
-from app.master.build import Build
-from app.master.build_request import BuildRequest
-from app.master.cluster_master import ClusterMaster
-from app.slave.cluster_slave import SlaveState
-from app.util.exceptions import BadRequestError, ItemNotFoundError
+from clusterrunner.app.master.build import Build
+from clusterrunner.app.master.build_request import BuildRequest
+from clusterrunner.app.master.cluster_master import ClusterMaster
+from clusterrunner.app.slave.cluster_slave import SlaveState
+from clusterrunner.app.util.exceptions import BadRequestError, ItemNotFoundError
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

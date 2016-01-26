@@ -1,5 +1,5 @@
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.session_id import SessionId
+from clusterrunner.app.util.session_id import SessionId
 
 
 class TestSessionId(BaseUnitTestCase):

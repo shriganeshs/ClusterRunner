@@ -1,6 +1,6 @@
-from app.subcommands.build_subcommand import BuildSubcommand
-from app.util.conf.configuration import Configuration
-from app.util.secret import Secret
+from clusterrunner.app.subcommands.build_subcommand import BuildSubcommand
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.util.secret import Secret
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

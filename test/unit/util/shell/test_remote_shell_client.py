@@ -1,7 +1,7 @@
 from genty import genty, genty_dataset
 
-from app.util.shell.remote_shell_client import RemoteShellClient
-from app.util.shell.shell_client import Response, EmptyResponse
+from clusterrunner.app.util.shell.remote_shell_client import RemoteShellClient
+from clusterrunner.app.util.shell.shell_client import Response, EmptyResponse
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

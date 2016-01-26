@@ -1,7 +1,7 @@
 from genty import genty, genty_dataset, genty_args
 
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.shell.shell_client import ShellClient, Response
+from clusterrunner.app.util.shell.shell_client import ShellClient, Response
 
 
 @genty

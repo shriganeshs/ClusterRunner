@@ -1,4 +1,4 @@
-from app.web_framework import route_node as node
+from clusterrunner.app.web_framework import route_node as node
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

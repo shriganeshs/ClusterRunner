@@ -6,7 +6,7 @@ from unittest.mock import call, mock_open, Mock
 
 import psutil
 
-from app.subcommands.stop_subcommand import Configuration, StopSubcommand
+from clusterrunner.app.subcommands.stop_subcommand import Configuration, StopSubcommand
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

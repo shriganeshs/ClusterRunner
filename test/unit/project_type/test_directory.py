@@ -3,9 +3,9 @@ from os.path import join, splitdrive
 
 from genty import genty, genty_dataset
 
-from app.project_type.directory import Directory
+from clusterrunner.app.project_type.directory import Directory
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.conf.configuration import Configuration
+from clusterrunner.app.util.conf.configuration import Configuration
 
 
 @genty

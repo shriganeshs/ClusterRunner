@@ -1,4 +1,4 @@
-from app.util import fs
+from clusterrunner.app.util import fs
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

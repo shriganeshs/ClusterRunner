@@ -6,9 +6,9 @@ from unittest.mock import ANY, call, MagicMock, Mock
 from genty import genty, genty_dataset
 import re
 
-from app.project_type.git import Git
-from app.util.conf.configuration import Configuration
-from app.util.process_utils import is_windows, get_environment_variable_setter_command
+from clusterrunner.app.project_type.git import Git
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.util.process_utils import is_windows, get_environment_variable_setter_command
 from test.framework.base_unit_test_case import BaseUnitTestCase
 from test.framework.comparators import AnyStringMatching
 

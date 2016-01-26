@@ -3,8 +3,8 @@ from unittest.mock import Mock
 
 from genty import genty, genty_dataset
 
-from app.deployment.remote_slave_service import RemoteSlaveService
-from app.util.shell.shell_client import ShellClient
+from clusterrunner.app.deployment.remote_slave_service import RemoteSlaveService
+from clusterrunner.app.util.shell.shell_client import ShellClient
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

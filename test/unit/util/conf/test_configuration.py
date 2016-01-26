@@ -1,4 +1,4 @@
-from app.util.conf.configuration import Configuration
+from clusterrunner.app.util.conf.configuration import Configuration
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

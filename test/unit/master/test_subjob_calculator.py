@@ -2,11 +2,11 @@ from unittest.mock import Mock
 
 from genty import genty, genty_dataset
 
-from app.master.atom import Atom
-from app.master.atomizer import Atomizer
-from app.master.job_config import JobConfig
-from app.master.subjob_calculator import SubjobCalculator
-from app.project_type.project_type import ProjectType
+from clusterrunner.app.master.atom import Atom
+from clusterrunner.app.master.atomizer import Atomizer
+from clusterrunner.app.master.job_config import JobConfig
+from clusterrunner.app.master.subjob_calculator import SubjobCalculator
+from clusterrunner.app.project_type.project_type import ProjectType
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

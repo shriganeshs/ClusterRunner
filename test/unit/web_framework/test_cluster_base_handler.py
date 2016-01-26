@@ -2,9 +2,9 @@ from genty import genty, genty_dataset
 import tornado.httpserver
 from unittest.mock import ANY, call, MagicMock
 
-from app.util.conf.configuration import Configuration
-from app.web_framework.cluster_application import ClusterApplication
-from app.web_framework.cluster_base_handler import ClusterBaseAPIHandler
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.web_framework.cluster_application import ClusterApplication
+from clusterrunner.app.web_framework.cluster_base_handler import ClusterBaseAPIHandler
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

@@ -9,11 +9,11 @@ import sys
 import shutil
 import tempfile
 
-from app.client.cluster_api_client import ClusterMasterAPIClient, ClusterSlaveAPIClient
-from app.util import log, poll, process_utils
-from app.util.conf.base_config_loader import BASE_CONFIG_FILE_SECTION
-from app.util.conf.config_file import ConfigFile
-from app.util.secret import Secret
+from clusterrunner.app.client.cluster_api_client import ClusterMasterAPIClient, ClusterSlaveAPIClient
+from clusterrunner.app.util import log, poll, process_utils
+from clusterrunner.app.util.conf.base_config_loader import BASE_CONFIG_FILE_SECTION
+from clusterrunner.app.util.conf.config_file import ConfigFile
+from clusterrunner.app.util.secret import Secret
 
 
 class FunctionalTestCluster(object):

@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from app.deployment.remote_master_service import RemoteMasterService
+from clusterrunner.app.deployment.remote_master_service import RemoteMasterService
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

@@ -1,8 +1,8 @@
 from unittest.mock import Mock, mock_open
 from os.path import expanduser, join
 
-from app.slave.subjob_executor import SubjobExecutor
-from app.util.conf.configuration import Configuration
+from clusterrunner.app.slave.subjob_executor import SubjobExecutor
+from clusterrunner.app.util.conf.configuration import Configuration
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
 
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.unhandled_exception_handler import UnhandledExceptionHandler
-from app.util.safe_thread import SafeThread
+from clusterrunner.app.util.unhandled_exception_handler import UnhandledExceptionHandler
+from clusterrunner.app.util.safe_thread import SafeThread
 
 
 class TestSafeThread(BaseUnitTestCase):

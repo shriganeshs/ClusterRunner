@@ -1,6 +1,6 @@
 from genty import genty, genty_dataset
 
-from app.master.job_config import JobConfig, ConfigValidationError
+from clusterrunner.app.master.job_config import JobConfig, ConfigValidationError
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

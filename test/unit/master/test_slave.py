@@ -1,11 +1,11 @@
 from unittest.mock import Mock, MagicMock
 
-from app.master.atom import Atom, AtomState
-from app.master.build import Build
-from app.master.build_request import BuildRequest
-from app.master.slave import DeadSlaveError, SlaveMarkedForShutdownError, Slave
-from app.master.subjob import Subjob
-from app.util.secret import Secret
+from clusterrunner.app.master.atom import Atom, AtomState
+from clusterrunner.app.master.build import Build
+from clusterrunner.app.master.build_request import BuildRequest
+from clusterrunner.app.master.slave import DeadSlaveError, SlaveMarkedForShutdownError, Slave
+from clusterrunner.app.master.subjob import Subjob
+from clusterrunner.app.util.secret import Secret
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

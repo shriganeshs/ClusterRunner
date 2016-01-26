@@ -1,6 +1,6 @@
 from unittest.mock import Mock, call, ANY
 
-from app.client.service_runner import ServiceRunner, ServiceRunError
+from clusterrunner.app.client.service_runner import ServiceRunner, ServiceRunError
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

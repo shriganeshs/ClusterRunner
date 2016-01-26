@@ -1,8 +1,8 @@
 from genty import genty, genty_dataset
 
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.shell.local_shell_client import LocalShellClient
-from app.util.shell.shell_client import Response, EmptyResponse
+from clusterrunner.app.util.shell.local_shell_client import LocalShellClient
+from clusterrunner.app.util.shell.shell_client import Response, EmptyResponse
 
 
 @genty

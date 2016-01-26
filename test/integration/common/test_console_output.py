@@ -2,7 +2,7 @@ from genty import genty, genty_dataset
 import os
 from tempfile import mkstemp
 
-from app.common.console_output import ConsoleOutput
+from clusterrunner.app.common.console_output import ConsoleOutput
 from test.framework.base_integration_test_case import BaseIntegrationTestCase
 
 

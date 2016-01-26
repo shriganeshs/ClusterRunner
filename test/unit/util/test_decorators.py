@@ -1,6 +1,6 @@
 from unittest.mock import call
 
-from app.util.decorators import retry_on_exception_exponential_backoff
+from clusterrunner.app.util.decorators import retry_on_exception_exponential_backoff
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

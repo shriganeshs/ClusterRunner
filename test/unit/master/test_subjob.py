@@ -1,8 +1,8 @@
 from unittest.mock import Mock
-from app.master.atom import Atom, AtomState
-from app.master.job_config import JobConfig
-from app.master.subjob import Subjob
-from app.project_type.project_type import ProjectType
+from clusterrunner.app.master.atom import Atom, AtomState
+from clusterrunner.app.master.job_config import JobConfig
+from clusterrunner.app.master.subjob import Subjob
+from clusterrunner.app.project_type.project_type import ProjectType
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

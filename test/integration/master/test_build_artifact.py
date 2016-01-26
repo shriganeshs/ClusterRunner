@@ -4,8 +4,8 @@ import os
 import shutil
 from tempfile import mkstemp, TemporaryDirectory
 
-from app.util import fs
-from app.master.build_artifact import BuildArtifact
+from clusterrunner.app.util import fs
+from clusterrunner.app.master.build_artifact import BuildArtifact
 from test.framework.base_integration_test_case import BaseIntegrationTestCase
 
 

@@ -6,20 +6,20 @@ from unittest.mock import MagicMock, Mock, mock_open, call
 
 from genty import genty, genty_dataset
 
-from app.master.atom import Atom, AtomState
-from app.master.atomizer import Atomizer
-from app.master.build import Build, BuildStatus, BuildProjectError
-from app.master.build_artifact import BuildArtifact
-from app.master.build_fsm import BuildState
-from app.master.build_request import BuildRequest
-from app.master.build_scheduler_pool import BuildSchedulerPool
-from app.master.job_config import JobConfig
-from app.master.slave import Slave, SlaveMarkedForShutdownError
-from app.master.subjob import Subjob
-from app.master.subjob_calculator import SubjobCalculator
-from app.project_type.project_type import ProjectType
-from app.util.conf.configuration import Configuration
-from app.util.counter import Counter
+from clusterrunner.app.master.atom import Atom, AtomState
+from clusterrunner.app.master.atomizer import Atomizer
+from clusterrunner.app.master.build import Build, BuildStatus, BuildProjectError
+from clusterrunner.app.master.build_artifact import BuildArtifact
+from clusterrunner.app.master.build_fsm import BuildState
+from clusterrunner.app.master.build_request import BuildRequest
+from clusterrunner.app.master.build_scheduler_pool import BuildSchedulerPool
+from clusterrunner.app.master.job_config import JobConfig
+from clusterrunner.app.master.slave import Slave, SlaveMarkedForShutdownError
+from clusterrunner.app.master.subjob import Subjob
+from clusterrunner.app.master.subjob_calculator import SubjobCalculator
+from clusterrunner.app.project_type.project_type import ProjectType
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.util.counter import Counter
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

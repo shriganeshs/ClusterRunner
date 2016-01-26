@@ -3,10 +3,10 @@ import sys
 from threading import Thread
 from unittest.mock import call, mock_open, MagicMock
 
-from app.util import process_utils
+from clusterrunner.app.util import process_utils
 from test.framework.base_unit_test_case import BaseUnitTestCase
 from test.framework.comparators import AnyStringMatching
-from app.util.unhandled_exception_handler import UnhandledExceptionHandler
+from clusterrunner.app.util.unhandled_exception_handler import UnhandledExceptionHandler
 
 
 class TestUnhandledExceptionHandler(BaseUnitTestCase):

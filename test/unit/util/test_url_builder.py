@@ -1,4 +1,4 @@
-from app.util.url_builder import UrlBuilder
+from clusterrunner.app.util.url_builder import UrlBuilder
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

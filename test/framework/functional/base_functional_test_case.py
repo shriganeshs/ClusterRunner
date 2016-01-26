@@ -5,9 +5,9 @@ import shutil
 import tempfile
 from unittest import TestCase
 
-from app.util import log
-from app.util.process_utils import is_windows
-from app.util.secret import Secret
+from clusterrunner.app.util import log
+from clusterrunner.app.util.process_utils import is_windows
+from clusterrunner.app.util.secret import Secret
 from test.framework.functional.fs_item import Directory
 from test.framework.functional.functional_test_cluster import FunctionalTestCluster, TestClusterTimeoutError
 

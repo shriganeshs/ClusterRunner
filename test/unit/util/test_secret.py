@@ -2,7 +2,7 @@ from genty import genty, genty_dataset
 import hashlib
 
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.secret import Secret
+from clusterrunner.app.util.secret import Secret
 
 
 @genty

@@ -4,10 +4,10 @@ import signal
 from threading import Event
 from unittest.mock import Mock, MagicMock, patch
 
-from app.project_type.project_type import ProjectType
-from app.subcommands.build_subcommand import BuildSubcommand
-from app.util.conf.configuration import Configuration
-from app.util.secret import Secret
+from clusterrunner.app.project_type.project_type import ProjectType
+from clusterrunner.app.subcommands.build_subcommand import BuildSubcommand
+from clusterrunner.app.util.conf.configuration import Configuration
+from clusterrunner.app.util.secret import Secret
 import main
 from test.framework.base_unit_test_case import BaseUnitTestCase
 from test.framework.comparators import AnythingOfType

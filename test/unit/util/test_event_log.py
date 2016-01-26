@@ -3,7 +3,7 @@ from unittest.mock import mock_open
 import collections
 import json
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.event_log import EventLog, LOG_CACHE_EXPIRE_TIME_IN_HOURS
+from clusterrunner.app.util.event_log import EventLog, LOG_CACHE_EXPIRE_TIME_IN_HOURS
 
 
 class TestEventLog(BaseUnitTestCase):

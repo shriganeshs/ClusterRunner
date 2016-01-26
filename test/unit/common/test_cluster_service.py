@@ -1,9 +1,9 @@
 from genty import genty, genty_dataset
 import os
 
-from app.common.console_output_segment import ConsoleOutputSegment
-from app.common.cluster_service import ClusterService
-from app.util.exceptions import BadRequestError, ItemNotFoundError
+from clusterrunner.app.common.console_output_segment import ConsoleOutputSegment
+from clusterrunner.app.common.cluster_service import ClusterService
+from clusterrunner.app.util.exceptions import BadRequestError, ItemNotFoundError
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

@@ -8,12 +8,12 @@ from genty import genty, genty_dataset
 import requests
 import requests.models
 
-from app.project_type.project_type import SetupFailureError
-from app.slave.cluster_slave import ClusterSlave, SlaveState
-from app.util.exceptions import BadRequestError
-from app.util.safe_thread import SafeThread
-from app.util.single_use_coin import SingleUseCoin
-from app.util.unhandled_exception_handler import UnhandledExceptionHandler
+from clusterrunner.app.project_type.project_type import SetupFailureError
+from clusterrunner.app.slave.cluster_slave import ClusterSlave, SlaveState
+from clusterrunner.app.util.exceptions import BadRequestError
+from clusterrunner.app.util.safe_thread import SafeThread
+from clusterrunner.app.util.single_use_coin import SingleUseCoin
+from clusterrunner.app.util.unhandled_exception_handler import UnhandledExceptionHandler
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

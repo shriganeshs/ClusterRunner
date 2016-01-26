@@ -1,7 +1,7 @@
 from requests.models import Response
 from unittest.mock import MagicMock, Mock, call
 
-from app.client.build_runner import BuildRunner
+from clusterrunner.app.client.build_runner import BuildRunner
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 

@@ -1,5 +1,5 @@
 from test.framework.base_unit_test_case import BaseUnitTestCase
-from app.util.single_use_coin import SingleUseCoin
+from clusterrunner.app.util.single_use_coin import SingleUseCoin
 
 
 class TestSingleUseCoin(BaseUnitTestCase):

@@ -2,7 +2,7 @@ from genty import genty, genty_dataset
 import subprocess
 from unittest.mock import MagicMock, call
 
-from app.util import autoversioning, package_version
+from clusterrunner.app.util import autoversioning, package_version
 from test.framework.comparators import AnythingOfType
 from test.framework.base_unit_test_case import BaseUnitTestCase
 

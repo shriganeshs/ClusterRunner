@@ -1,6 +1,6 @@
 from unittest.mock import Mock
-from app.master.atom import Atom
-from app.master.time_based_atom_grouper import TimeBasedAtomGrouper, _AtomTimingDataError
+from clusterrunner.app.master.atom import Atom
+from clusterrunner.app.master.time_based_atom_grouper import TimeBasedAtomGrouper, _AtomTimingDataError
 from test.framework.base_unit_test_case import BaseUnitTestCase
 
 
