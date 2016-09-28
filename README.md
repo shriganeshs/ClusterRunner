@@ -3,6 +3,8 @@
 [![Build Status](https://ci.appveyor.com/api/projects/status/j7liyv4uuq5m936q/branch/master?svg=true)](https://ci.appveyor.com/project/aptxkid/clusterrunner)
 [![Coverage Status](https://coveralls.io/repos/box/ClusterRunner/badge.svg?branch=master)](https://coveralls.io/r/box/ClusterRunner?branch=master)
 
+# Note: This branch holds modifications needed to run CR in Docker containers.
+
 # ClusterRunner
 
 ClusterRunner makes it easy to execute test-suites across your infrastructure in the fastest and most efficient way possible.
